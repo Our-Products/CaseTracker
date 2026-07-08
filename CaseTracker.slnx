@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="Application/Application.csproj" />
+  <Project Path="CaseTracker.Shared/CaseTracker.Shared.csproj" />
+  <Project Path="CaseTracker/CaseTracker.csproj" />
+  <Project Path="CaseTrackerApp/CaseTrackerApp.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
+</Solution>
