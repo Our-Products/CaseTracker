@@ -30,11 +30,11 @@ namespace CaseTrackerInfrastructure.Services
             {
                 UserId = Guid.NewGuid(),
                 MobileNumber = request.MobileNumber,
-                Email = request.Email,
+                Email = request.Email ?? string.Empty,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Status = "active",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
             };
 
             await _userRepository.AddAsync(user);
@@ -58,7 +58,7 @@ namespace CaseTrackerInfrastructure.Services
 
         private int GetExpiryMinutes()
         {
-            if (int.TryParse(_config["Jwt:ExpiryMinutes"], out var m)) return m; 
+            if (int.TryParse(_config["Jwt:ExpiryMinutes"], out var m)) return m;
             return 60;
         }
 
