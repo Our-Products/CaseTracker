@@ -1,10 +1,4 @@
-<<<<<<< Updated upstream
-using Application.Interfaces;
-using Infrastructure.Data;
-using Infrastructure.Repositories;
-=======
 using CaseTrackerInfrastructure.Data;
->>>>>>> Stashed changes
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseTracker.Extensions
