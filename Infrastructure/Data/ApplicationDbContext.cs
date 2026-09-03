@@ -1,7 +1,7 @@
 ﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Domain.Data
+namespace Infrastructure.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -42,6 +42,17 @@ namespace Domain.Data
 
                 entity.Property(e => e.UpdatedAt)
                     .HasColumnName("updated_at");
+
+                // Indexes
+                entity.HasIndex(e => e.MobileNumber)
+                    .HasDatabaseName("ix_lawyers_mobile_number");
+
+                entity.HasIndex(e => e.Email)
+                    .HasDatabaseName("ix_lawyers_email");
+
+                entity.HasIndex(e => e.Status)
+                    .HasDatabaseName("idx_lawyers_status");
+                
             });
 
             base.OnModelCreating(modelBuilder);
