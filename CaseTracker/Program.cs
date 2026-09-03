@@ -1,5 +1,5 @@
 using CaseTracker.Extensions;
-using Infrastructure.Middleware;
+using CaseTrackerInfrastructure.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,5 +1,4 @@
-using System.Threading.Tasks;
-using Application.DTOs;
+using CaseTrackerApplication.DTOs;
 
 namespace CaseTrackerMobile.Services
 {
@@ -13,6 +12,6 @@ namespace CaseTrackerMobile.Services
         /// <summary>
         /// Attempts to register a new user and returns an AuthResult on success or null on failure.
         /// </summary>
-        Task<Application.DTOs.AuthResult?> RegisterAsync(Application.DTOs.RegisterRequest request);
+        Task<AuthResult?> RegisterAsync(RegisterRequest request);
     }
 }

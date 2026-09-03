@@ -1,6 +1,10 @@
+<<<<<<< Updated upstream
 using Application.Interfaces;
 using Domain.Data;
 using Infrastructure.Repositories;
+=======
+using CaseTrackerInfrastructure.Data;
+>>>>>>> Stashed changes
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseTracker.Extensions
@@ -22,7 +26,6 @@ namespace CaseTracker.Extensions
 
             // Register repositories with Scoped lifetime
             // Scoped: New instance per HTTP request
-            services.AddScoped<ILawyerRepository, LawyerRepository>();
 
             return services;
         }

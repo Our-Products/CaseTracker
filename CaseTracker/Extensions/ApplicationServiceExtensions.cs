@@ -1,5 +1,5 @@
-using Application.Interfaces;
-using Infrastructure.Services;
+using CaseTrackerApplication.Interfaces;
+using CaseTrackerInfrastructure.Services;
 
 namespace CaseTracker.Extensions
 {
