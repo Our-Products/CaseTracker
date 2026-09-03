@@ -1,24 +1,42 @@
-﻿namespace CaseTrackerMobile
+﻿using System;
+using Microsoft.Maui.Controls;
+using CaseTrackerMobile.Views;
+
+namespace CaseTrackerMobile
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
+
+            // Initialize with Dashboard view
+            ContentArea.Content = new DashboardView();
         }
 
-        private void OnCounterClicked(object? sender, EventArgs e)
+        private void OnDashboardClicked(object sender, EventArgs e)
         {
-            count++;
+            ContentArea.Content = new DashboardView();
+        }
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+        private void OnCasesClicked(object sender, EventArgs e)
+        {
+            ContentArea.Content = new CasesView();
+        }
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+        private void OnClientsClicked(object sender, EventArgs e)
+        {
+            ContentArea.Content = new ClientsView();
+        }
+
+        private void OnDocumentsClicked(object sender, EventArgs e)
+        {
+            ContentArea.Content = new DocumentsView();
+        }
+
+        private void OnProfileClicked(object sender, EventArgs e)
+        {
+            ContentArea.Content = new ProfileView();
         }
     }
 }

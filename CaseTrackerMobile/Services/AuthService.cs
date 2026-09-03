@@ -40,5 +40,23 @@ namespace CaseTrackerMobile.Services
                 return null;
             }
         }
+
+        public async Task<Application.DTOs.AuthResult?> RegisterAsync(Application.DTOs.RegisterRequest request)
+        {
+            var response = await _http.PostAsJsonAsync("api/auth/register", request);
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            try
+            {
+                // Use built-in JSON deserialization to parse the AuthResult
+                var result = await response.Content.ReadFromJsonAsync<Application.DTOs.AuthResult>();
+                return result;
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 }
