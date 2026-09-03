@@ -9,34 +9,16 @@ namespace CaseTrackerMobile
         public MainPage()
         {
             InitializeComponent();
-
-            // Initialize with Dashboard view
-            ContentArea.Content = new DashboardView();
         }
 
-        private void OnDashboardClicked(object sender, EventArgs e)
-        {
-            ContentArea.Content = new DashboardView();
-        }
+        //private async void LogoutButton_Clicked(object sender, EventArgs e)
+        //{
+        //    //Preferences.Remove("AuthToken");
+        //    //Preferences.Remove("UserId");
+        //    //Preferences.Remove("UserName");
 
-        private void OnCasesClicked(object sender, EventArgs e)
-        {
-            ContentArea.Content = new CasesView();
-        }
+        //    await Shell.Current.GoToAsync("//LoginPage");
+        //}
 
-        private void OnClientsClicked(object sender, EventArgs e)
-        {
-            ContentArea.Content = new ClientsView();
-        }
-
-        private void OnDocumentsClicked(object sender, EventArgs e)
-        {
-            ContentArea.Content = new DocumentsView();
-        }
-
-        private void OnProfileClicked(object sender, EventArgs e)
-        {
-            ContentArea.Content = new ProfileView();
-        }
     }
 }
