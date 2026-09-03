@@ -1,10 +1,6 @@
-using System;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
-using Application.DTOs;
+using CaseTrackerApplication.DTOs;
 using CaseTrackerMobile.Services;
+using System.Windows.Input;
 
 namespace CaseTrackerMobile.ViewModels
 {

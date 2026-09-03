@@ -1,7 +1,9 @@
 <Solution>
-  <Project Path="Application/Application.csproj" />
+  <Project Path="Application/CaseTrackerApplication.csproj" />
   <Project Path="CaseTracker/CaseTracker.csproj" />
-  <Project Path="CaseTrackerMobile/CaseTrackerMobile.csproj" Id="79e76c9d-d8d1-4a16-af33-8e1d508094ca" />
-  <Project Path="Domain/Domain.csproj" />
-  <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="CaseTrackerMobile/CaseTrackerMobile.csproj" Id="79e76c9d-d8d1-4a16-af33-8e1d508094ca">
+    <Deploy Solution="Debug|*" />
+  </Project>
+  <Project Path="Domain/CaseTrackerDomain.csproj" />
+  <Project Path="Infrastructure/CaseTrackerInfrastructure.csproj" />
 </Solution>

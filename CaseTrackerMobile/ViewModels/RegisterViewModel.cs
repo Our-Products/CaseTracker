@@ -1,7 +1,6 @@
-using System;
+using CaseTrackerApplication.DTOs;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using Microsoft.Maui.Controls;
 
 namespace CaseTrackerMobile.ViewModels
 {
@@ -85,7 +84,7 @@ namespace CaseTrackerMobile.ViewModels
                 }
 
                 // Call backend registration API via IAuthService
-                var req = new Application.DTOs.RegisterRequest
+                var req = new RegisterRequest
                 {
                     FullName = FullName.Trim(),
                     MobileNumber = MobileNumber.Trim(),

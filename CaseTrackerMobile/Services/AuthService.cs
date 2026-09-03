@@ -1,8 +1,6 @@
-using System.Net.Http;
+using CaseTrackerApplication.DTOs;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Application.DTOs;
 
 namespace CaseTrackerMobile.Services
 {
@@ -41,7 +39,7 @@ namespace CaseTrackerMobile.Services
             }
         }
 
-        public async Task<Application.DTOs.AuthResult?> RegisterAsync(Application.DTOs.RegisterRequest request)
+        public async Task<AuthResult?> RegisterAsync(RegisterRequest request)
         {
             var response = await _http.PostAsJsonAsync("api/auth/register", request);
             if (!response.IsSuccessStatusCode)
@@ -50,7 +48,7 @@ namespace CaseTrackerMobile.Services
             try
             {
                 // Use built-in JSON deserialization to parse the AuthResult
-                var result = await response.Content.ReadFromJsonAsync<Application.DTOs.AuthResult>();
+                var result = await response.Content.ReadFromJsonAsync<CaseTrackerApplication.DTOs.AuthResult>();
                 return result;
             }
             catch

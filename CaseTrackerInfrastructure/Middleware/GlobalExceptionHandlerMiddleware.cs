@@ -1,10 +1,10 @@
-using System.Net;
-using System.Text.Json;
-using Application.DTOs;
+using CaseTrackerApplication.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Text.Json;
 
-namespace Infrastructure.Middleware
+namespace CaseTrackerInfrastructure.Middleware
 {
     public class GlobalExceptionHandlerMiddleware
     {

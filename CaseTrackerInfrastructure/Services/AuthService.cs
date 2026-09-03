@@ -1,59 +1,58 @@
-using Application.DTOs;
-using Application.Interfaces;
-using Domain.Models;
-using Microsoft.IdentityModel.Tokens;
+using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.Interfaces;
+using CaseTrackerDomain.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Infrastructure.Services
+namespace CaseTrackerInfrastructure.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ILawyerRepository _lawyerRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _config;
 
-        public AuthService(ILawyerRepository lawyerRepository, IConfiguration config)
+        public AuthService(IUserRepository userRepository, IConfiguration config)
         {
-            _lawyerRepository = lawyerRepository;
+            _userRepository = userRepository;
             _config = config;
         }
 
         public async Task<AuthResult> RegisterAsync(RegisterRequest request)
         {
             // ensure mobile uniqueness
-            if (await _lawyerRepository.MobileNumberExistsAsync(request.MobileNumber))
+            if (await _userRepository.MobileNumberExistsAsync(request.MobileNumber))
                 throw new InvalidOperationException("Mobile number already registered");
 
-            var lawyer = new Lawyer
+            var user = new User
             {
-                LawyerId = Guid.NewGuid(),
-                FullName = request.FullName,
+                UserId = Guid.NewGuid(),
                 MobileNumber = request.MobileNumber,
                 Email = request.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Status = "active",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _lawyerRepository.AddAsync(lawyer);
-            await _lawyerRepository.SaveChangesAsync();
+            await _userRepository.AddAsync(user);
+            await _userRepository.SaveChangesAsync();
 
-            var token = CreateToken(lawyer);
+            var token = CreateToken(user);
             return new AuthResult { Token = token, ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()) };
         }
 
         public async Task<AuthResult> LoginAsync(LoginRequest request)
         {
-            var lawyer = await _lawyerRepository.GetByMobileNumberAsync(request.MobileNumber);
-            if (lawyer == null) throw new InvalidOperationException("Invalid credentials");
+            var user = await _userRepository.GetByMobileNumberAsync(request.MobileNumber);
+            if (user == null) throw new InvalidOperationException("Invalid credentials");
 
-            if (!BCrypt.Net.BCrypt.Verify(request.Password, lawyer.PasswordHash))
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 throw new InvalidOperationException("Invalid credentials");
 
-            var token = CreateToken(lawyer);
+            var token = CreateToken(user);
             return new AuthResult { Token = token, ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()) };
         }
 
@@ -63,16 +62,15 @@ namespace Infrastructure.Services
             return 60;
         }
 
-        private string CreateToken(Lawyer lawyer)
+        private string CreateToken(User user)
         {
             var key = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
             var issuer = _config["Jwt:Issuer"];
             var audience = _config["Jwt:Audience"];
 
             var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, lawyer.LawyerId.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, lawyer.MobileNumber),
-                new Claim("full_name", lawyer.FullName ?? string.Empty)
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.MobileNumber),
             };
 
             var keyBytes = Encoding.UTF8.GetBytes(key);

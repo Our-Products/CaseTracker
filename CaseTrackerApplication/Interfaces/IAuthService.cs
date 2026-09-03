@@ -1,7 +1,6 @@
-using System.Threading.Tasks;
-using Application.DTOs;
+using CaseTrackerApplication.DTOs;
 
-namespace Application.Interfaces
+namespace CaseTrackerApplication.Interfaces
 {
     public interface IAuthService
     {
