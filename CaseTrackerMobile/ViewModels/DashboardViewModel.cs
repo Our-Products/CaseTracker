@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 
 namespace CaseTrackerMobile.ViewModels
@@ -21,6 +24,9 @@ namespace CaseTrackerMobile.ViewModels
 
     public partial class DashboardViewModel : ObservableObject
     {
+        private CancellationTokenSource? _searchCts;
+        private CancellationTokenSource? _loadingDelayCts;
+
         #region Properties
 
         private string _advocateName = "Adv. R. Sundaram";
@@ -80,7 +86,7 @@ namespace CaseTrackerMobile.ViewModels
             {
                 if (SetProperty(ref _searchText, value))
                 {
-                    FilterHearings();
+                    _ = TriggerDebouncedSearchAsync();
                 }
             }
         }
@@ -90,6 +96,13 @@ namespace CaseTrackerMobile.ViewModels
         {
             get => _isBusy;
             set => SetProperty(ref _isBusy, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
         }
 
         public ObservableCollection<DashboardHearingItem> Hearings { get; } = new();
@@ -186,7 +199,57 @@ namespace CaseTrackerMobile.ViewModels
             }
         }
 
-        #region Commands
+        #region Commands & 200ms Debounced Data-Fetching Strategy
+
+        [RelayCommand]
+        public async Task TriggerDebouncedSearchAsync()
+        {
+            // Cancel previous active search task
+            _searchCts?.Cancel();
+            _searchCts = new CancellationTokenSource();
+            var token = _searchCts.Token;
+
+            _loadingDelayCts?.Cancel();
+            _loadingDelayCts = new CancellationTokenSource();
+            var delayToken = _loadingDelayCts.Token;
+
+            // 1. Debounce user keystrokes by 200ms
+            try
+            {
+                await Task.Delay(200, token);
+            }
+            catch (TaskCanceledException)
+            {
+                return;
+            }
+
+            // 2. Start 200ms delay timer before setting IsLoading = true
+            // If data fetching finishes in <200ms, timer is cancelled and IsLoading stays false (zero UI flicker)
+            var showLoadingTask = Task.Delay(200, delayToken).ContinueWith(t =>
+            {
+                if (!t.IsCanceled && !token.IsCancellationRequested)
+                {
+                    MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
+                }
+            }, TaskScheduler.Default);
+
+            try
+            {
+                // Simulated async network data fetch delay
+                await Task.Delay(250, token);
+                FilterHearings();
+            }
+            catch (TaskCanceledException)
+            {
+                // Search operation cancelled by subsequent keystroke
+            }
+            finally
+            {
+                // Cancel loading delay timer if work completed fast (<200ms)
+                _loadingDelayCts?.Cancel();
+                MainThread.BeginInvokeOnMainThread(() => IsLoading = false);
+            }
+        }
 
         [RelayCommand]
         public async Task RefreshDashboardAsync()
@@ -194,13 +257,29 @@ namespace CaseTrackerMobile.ViewModels
             if (IsBusy) return;
 
             IsBusy = true;
+
+            _loadingDelayCts?.Cancel();
+            _loadingDelayCts = new CancellationTokenSource();
+            var delayToken = _loadingDelayCts.Token;
+
+            // 200ms debounced loader display
+            var showLoadingTask = Task.Delay(200, delayToken).ContinueWith(t =>
+            {
+                if (!t.IsCanceled)
+                {
+                    MainThread.BeginInvokeOnMainThread(() => IsLoading = true);
+                }
+            }, TaskScheduler.Default);
+
             try
             {
-                await Task.Delay(800); // Smooth simulated refresh
+                await Task.Delay(500); // Async data fetching simulation
                 LoadDummyData();
             }
             finally
             {
+                _loadingDelayCts?.Cancel();
+                MainThread.BeginInvokeOnMainThread(() => IsLoading = false);
                 IsBusy = false;
             }
         }

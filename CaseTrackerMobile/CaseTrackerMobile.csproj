@@ -28,7 +28,7 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>CaseTrackerMobile</ApplicationTitle>
+		<ApplicationTitle>CTracker</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.casetrackermobile</ApplicationId>

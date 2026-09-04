@@ -138,85 +138,128 @@
                     </VerticalStackLayout>
                 </controls:ShadcnCard>
 
-                <!-- Cause List Hearing Cards -->
-                <CollectionView ItemsSource="{Binding Hearings}" SelectionMode="None">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="viewmodels:DashboardHearingItem">
-                            <Grid Padding="0,0,0,12">
-                                <controls:ShadcnCard Padding="16">
-                                    <VerticalStackLayout Spacing="10">
-                                        <!-- Top Row: Case Number & Status Badge -->
-                                        <Grid ColumnDefinitions="*, Auto">
-                                            <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
-                                                <Label Text="{Binding CaseNumber}"
-                                                       FontSize="15"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#113979" />
-                                                <Label Text="{Binding ItemNumber}"
-                                                       FontSize="12"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#64748B"
-                                                       VerticalOptions="Center" />
-                                            </HorizontalStackLayout>
+                <!-- Cause List Container with Inline Skeleton / Spinner Loading -->
+                <Grid>
+                    <!-- Inline Skeleton Loading Layout (Binds to IsLoading) -->
+                    <controls:ShadcnCard IsVisible="{Binding IsLoading}" Padding="20">
+                        <VerticalStackLayout Spacing="16">
+                            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                <ActivityIndicator IsRunning="{Binding IsLoading}"
+                                                   Color="#113979"
+                                                   HeightRequest="22"
+                                                   WidthRequest="22"
+                                                   VerticalOptions="Center" />
+                                <Label Text="Updating cause list schedule..."
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="#113979"
+                                       VerticalOptions="Center" />
+                            </HorizontalStackLayout>
 
-                                            <controls:ShadcnBadge Grid.Column="1"
-                                                                  Text="{Binding BadgeText}"
-                                                                  Variant="{Binding BadgeVariant}"
-                                                                  VerticalOptions="Center" />
-                                        </Grid>
+                            <!-- Skeleton Placeholder Row 1 -->
+                            <VerticalStackLayout Spacing="8">
+                                <Border BackgroundColor="#F1F5F9" StrokeThickness="0" HeightRequest="16" WidthRequest="220" HorizontalOptions="Start">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                </Border>
+                                <Border BackgroundColor="#E2E8F0" StrokeThickness="0" HeightRequest="14" WidthRequest="160" HorizontalOptions="Start">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                </Border>
+                            </VerticalStackLayout>
 
-                                        <!-- Title -->
-                                        <Label Text="{Binding Title}"
-                                               FontSize="14"
-                                               FontAttributes="Bold"
-                                               TextColor="#1E293B" />
-
-                                        <!-- Court Name -->
-                                        <HorizontalStackLayout Spacing="6">
-                                            <Label Text="🏛️" FontSize="13" />
-                                            <Label Text="{Binding CourtName}"
-                                                   FontSize="12"
-                                                   TextColor="#475569"
-                                                   FontAttributes="Bold" />
-                                        </HorizontalStackLayout>
-
-                                        <!-- Stage -->
-                                        <Border BackgroundColor="#F1F5F9"
-                                                StrokeThickness="0"
-                                                Padding="10,6">
-                                            <Border.StrokeShape>
-                                                <RoundRectangle CornerRadius="8" />
-                                            </Border.StrokeShape>
-                                            <HorizontalStackLayout Spacing="6">
-                                                <Label Text="📌 Stage:"
-                                                       FontSize="12"
-                                                       FontAttributes="Bold"
-                                                       TextColor="#334155" />
-                                                <Label Text="{Binding Stage}"
-                                                       FontSize="12"
-                                                       TextColor="#475569" />
-                                            </HorizontalStackLayout>
-                                        </Border>
-                                    </VerticalStackLayout>
-                                </controls:ShadcnCard>
-                            </Grid>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                    <CollectionView.EmptyView>
-                        <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Padding="40">
-                            <Label Text="🔍" FontSize="36" HorizontalOptions="Center" />
-                            <Label Text="No hearings found"
-                                   FontSize="16"
-                                   FontAttributes="Bold"
-                                   TextColor="#64748B"
-                                   HorizontalOptions="Center" />
-                            <Label Text="Try adjusting your cause list search terms."
-                                   FontSize="12"
-                                   TextColor="#94A3B8"
-                                   HorizontalOptions="Center" />
+                            <!-- Skeleton Placeholder Row 2 -->
+                            <VerticalStackLayout Spacing="8">
+                                <Border BackgroundColor="#F1F5F9" StrokeThickness="0" HeightRequest="16" WidthRequest="260" HorizontalOptions="Start">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                </Border>
+                                <Border BackgroundColor="#E2E8F0" StrokeThickness="0" HeightRequest="14" WidthRequest="180" HorizontalOptions="Start">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="4" /></Border.StrokeShape>
+                                </Border>
+                            </VerticalStackLayout>
                         </VerticalStackLayout>
-                    </CollectionView.EmptyView>
-                </CollectionView>
+                    </controls:ShadcnCard>
+
+                    <!-- Cause List Hearing Cards (Visible when NOT IsLoading) -->
+                    <CollectionView ItemsSource="{Binding Hearings}"
+                                    SelectionMode="None"
+                                    IsVisible="{Binding IsLoading, Converter={StaticResource Key=InvertedBoolConverter}}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:DashboardHearingItem">
+                                <Grid Padding="0,0,0,12">
+                                    <controls:ShadcnCard Padding="16">
+                                        <VerticalStackLayout Spacing="10">
+                                            <!-- Top Row: Case Number & Status Badge -->
+                                            <Grid ColumnDefinitions="*, Auto">
+                                                <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                                                    <Label Text="{Binding CaseNumber}"
+                                                           FontSize="15"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#113979" />
+                                                    <Label Text="{Binding ItemNumber}"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#64748B"
+                                                           VerticalOptions="Center" />
+                                                </HorizontalStackLayout>
+
+                                                <controls:ShadcnBadge Grid.Column="1"
+                                                                      Text="{Binding BadgeText}"
+                                                                      Variant="{Binding BadgeVariant}"
+                                                                      VerticalOptions="Center" />
+                                            </Grid>
+
+                                            <!-- Title -->
+                                            <Label Text="{Binding Title}"
+                                                   FontSize="14"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#1E293B" />
+
+                                            <!-- Court Name -->
+                                            <HorizontalStackLayout Spacing="6">
+                                                <Label Text="🏛️" FontSize="13" />
+                                                <Label Text="{Binding CourtName}"
+                                                       FontSize="12"
+                                                       TextColor="#475569"
+                                                       FontAttributes="Bold" />
+                                            </HorizontalStackLayout>
+
+                                            <!-- Stage -->
+                                            <Border BackgroundColor="#F1F5F9"
+                                                    StrokeThickness="0"
+                                                    Padding="10,6">
+                                                <Border.StrokeShape>
+                                                    <RoundRectangle CornerRadius="8" />
+                                                </Border.StrokeShape>
+                                                <HorizontalStackLayout Spacing="6">
+                                                    <Label Text="📌 Stage:"
+                                                           FontSize="12"
+                                                           FontAttributes="Bold"
+                                                           TextColor="#334155" />
+                                                    <Label Text="{Binding Stage}"
+                                                           FontSize="12"
+                                                           TextColor="#475569" />
+                                                </HorizontalStackLayout>
+                                            </Border>
+                                        </VerticalStackLayout>
+                                    </controls:ShadcnCard>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Padding="40">
+                                <Label Text="🔍" FontSize="36" HorizontalOptions="Center" />
+                                <Label Text="No hearings found"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#64748B"
+                                       HorizontalOptions="Center" />
+                                <Label Text="Try adjusting your cause list search terms."
+                                       FontSize="12"
+                                       TextColor="#94A3B8"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </Grid>
 
             </VerticalStackLayout>
         </ScrollView>
