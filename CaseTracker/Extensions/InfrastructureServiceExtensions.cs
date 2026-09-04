@@ -15,14 +15,23 @@ namespace CaseTracker.Extensions
             this IServiceCollection services, 
             IConfiguration configuration)
         {
-            // Register DbContext with Scoped lifetime
-            // Scoped: New instance per HTTP request
+            var useVirtualDb = configuration.GetValue<bool>("UseVirtualDatabase");
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            var virtualConnectionString = configuration.GetConnectionString("VirtualConnection") ?? "Data Source=casetracker_virtual_dev.db";
 
-            // Register repositories with Scoped lifetime
-            // Scoped: New instance per HTTP request
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                if (useVirtualDb || string.IsNullOrWhiteSpace(connectionString))
+                {
+                    options.UseSqlite(virtualConnectionString);
+                }
+                else
+                {
+                    options.UseNpgsql(connectionString);
+                }
+            });
+
+            // Register repositories
             services.AddScoped<IUserRepository, UserRepository>();
 
             // Register infrastructure services

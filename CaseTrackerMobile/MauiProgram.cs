@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using CaseTrackerMobile.Services;
 using CaseTrackerMobile.ViewModels;
@@ -22,6 +22,31 @@ namespace CaseTrackerMobile
                     // Add Material Icons font (place MaterialIcons-Regular.ttf into Resources/Fonts)
                     fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
                 });
+
+            // Configure global handler mappings to remove native underlines & borders
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
+            {
+#if ANDROID
+                h.PlatformView.Background = null;
+                h.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+#elif IOS || MACCATALYST
+                h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+#endif
+            });
+
+            Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
+            {
+#if ANDROID
+                h.PlatformView.Background = null;
+                h.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+#elif IOS || MACCATALYST
+                h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+#endif
+            });
 
 #if DEBUG
     		builder.Logging.AddDebug();
@@ -57,6 +82,10 @@ namespace CaseTrackerMobile
             builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<DashboardViewModel>();
+            builder.Services.AddTransient<Views.LoginPage>();
+            builder.Services.AddTransient<Views.RegisterPage>();
+            builder.Services.AddTransient<Views.DashboardPage>();
 
             var app = builder.Build();
 

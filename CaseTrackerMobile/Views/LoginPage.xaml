@@ -1,44 +1,170 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:CaseTrackerMobile.Controls"
+             xmlns:viewmodels="clr-namespace:CaseTrackerMobile.ViewModels"
              x:Class="CaseTrackerMobile.Views.LoginPage"
+             x:DataType="viewmodels:LoginViewModel"
              Title="Login"
+             BackgroundColor="#0B1528"
              Shell.NavBarIsVisible="False">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30" Spacing="18" VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,*">
+        
+        <!-- Header Section -->
+        <VerticalStackLayout Grid.Row="0" Padding="24,36,24,20" Spacing="10" HorizontalOptions="Center">
+            
+            <!-- Shield Logo Icon -->
+            <Border BackgroundColor="#D4AF37"
+                    StrokeThickness="0"
+                    HeightRequest="60"
+                    WidthRequest="60"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="16" />
+                </Border.StrokeShape>
+                <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="🛡️" FontSize="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+            </Border>
 
-            <Image Source="app.jpg" HeightRequest="80" HorizontalOptions="Center" />
+            <!-- App Title -->
+            <Label Text="CaseTracker"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   HorizontalOptions="Center" />
+            
+            <Label Text="Case Management for Advocates"
+                   FontSize="13"
+                   TextColor="#94A3B8"
+                   HorizontalOptions="Center" />
 
-            <Label Text="CaseTracker" FontSize="28" HorizontalOptions="Center" TextColor="White" />
-            <Label Text="Professional Case Management for Advocates" FontSize="14" HorizontalOptions="Center" TextColor="White" />
+            <!-- Pill Badges Row -->
+            <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,6,0,0">
+                <Border BackgroundColor="#16253D" StrokeThickness="1" Stroke="#233554" Padding="10,5">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+                    <Label Text="🔒 Secure" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                </Border>
 
+                <Border BackgroundColor="#16253D" StrokeThickness="1" Stroke="#233554" Padding="10,5">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+                    <Label Text="⚖️ Tamil Nadu" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                </Border>
 
-            <Frame CornerRadius="12" Padding="18" HasShadow="True" BackgroundColor="White" Margin="0,12">
-                <VerticalStackLayout Spacing="12">
-                    <Label Text="Login to your account" FontAttributes="Bold" FontSize="18" />
-
-                    <Entry Text="{Binding Mobile}" Placeholder="Enter your mobile number" Keyboard="Telephone" />
-                    <Entry Text="{Binding Password}" Placeholder="Enter your password" IsPassword="True" />
-
-                    <Label Text="Forgot Password?" TextColor="#DAA520" HorizontalOptions="End" />
-
-                    <Button Text="Login" BackgroundColor="#0B1320" TextColor="White" Command="{Binding LoginCommand}" />
-
-                    <HorizontalStackLayout HorizontalOptions="Center">
-                        <Label Text="Don't have an account?" />
-                        <Label Text=" Register Now" TextColor="#DAA520">
-                            <Label.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnRegisterTapped" NumberOfTapsRequired="1" />
-                            </Label.GestureRecognizers>
-                        </Label>
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-            </Frame>
-
-            <Label Text="Serving Advocates across Tamil Nadu and Puducherry" FontSize="12" HorizontalOptions="Center" TextColor="White" />
+                <Border BackgroundColor="#16253D" StrokeThickness="1" Stroke="#233554" Padding="10,5">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14" />
+                    </Border.StrokeShape>
+                    <Label Text="📍 Puducherry" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                </Border>
+            </HorizontalStackLayout>
 
         </VerticalStackLayout>
-    </ScrollView>
+
+        <!-- White Card Sheet with Shadcn Components -->
+        <ScrollView Grid.Row="1" VerticalOptions="End">
+            <Border BackgroundColor="White"
+                    StrokeThickness="0"
+                    Padding="24,20,24,28"
+                    Margin="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="32,32,0,0" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="16">
+                    
+                    <!-- Drag Handle -->
+                    <BoxView WidthRequest="36"
+                             HeightRequest="4"
+                             Color="#CBD5E1"
+                             HorizontalOptions="Center"
+                             Margin="0,0,0,8" />
+
+                    <!-- Form Header -->
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Welcome back"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               TextColor="#0F172A" />
+                        <Label Text="Sign in to access your cases"
+                               FontSize="13"
+                               TextColor="#64748B" />
+                    </VerticalStackLayout>
+
+                    <!-- Dual Box Mobile Entry with Shadcn Control & Zero Underline -->
+                    <controls:ShadcnEntry LabelText="Mobile Number"
+                                          PrefixText="IN  +91"
+                                          Text="{Binding Mobile}"
+                                          Placeholder="9876543210"
+                                          Keyboard="Telephone"
+                                          HasError="{Binding HasMobileError}"
+                                          ErrorText="{Binding MobileError}" />
+
+                    <!-- Password Field with Interactive Eye Toggle & Forgot Password Link -->
+                    <controls:ShadcnEntry LabelText="Password"
+                                          RightLabelText="Forgot password?"
+                                          RightLabelCommand="{Binding ForgotPasswordCommand}"
+                                          Text="{Binding Password}"
+                                          Placeholder="Enter your password"
+                                          IsPassword="{Binding IsPasswordHidden}"
+                                          ShowTrailingAction="True"
+                                          TrailingActionText="👁"
+                                          TrailingActionCommand="{Binding TogglePasswordVisibilityCommand}"
+                                          HasError="{Binding HasPasswordError}"
+                                          ErrorText="{Binding PasswordError}" />
+
+                    <!-- Primary Action Button with Shadcn Press Animation -->
+                    <controls:ShadcnButton Text="Sign In  ➔"
+                                          Command="{Binding ExecuteLoginCommand}"
+                                          IsLoading="{Binding IsBusy}"
+                                          ButtonColor="#113979"
+                                          Margin="0,8,0,0" />
+
+                    <!-- Divider -->
+                    <Grid ColumnDefinitions="*,Auto,*" Margin="0,4" VerticalOptions="Center">
+                        <BoxView Grid.Column="0" HeightRequest="1" Color="#E2E8F0" VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text=" or " FontSize="12" TextColor="#94A3B8" HorizontalOptions="Center" />
+                        <BoxView Grid.Column="2" HeightRequest="1" Color="#E2E8F0" VerticalOptions="Center" />
+                    </Grid>
+
+                    <!-- Secondary Button: Create New Account -->
+                    <Border Stroke="#CBD5E1" StrokeThickness="1" BackgroundColor="Transparent" Padding="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Button Text="Create new account"
+                                BackgroundColor="Transparent"
+                                TextColor="#0F172A"
+                                HeightRequest="50"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                Command="{Binding CreateAccountCommand}" />
+                    </Border>
+
+                    <!-- Footnote -->
+                    <Label Margin="0,8,0,0"
+                           FontSize="11"
+                           TextColor="#94A3B8"
+                           HorizontalTextAlignment="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="By continuing you agree to our " />
+                                <Span Text="Terms of Service" TextDecorations="Underline" TextColor="#64748B" />
+                                <Span Text=" &amp; " />
+                                <Span Text="Privacy Policy" TextDecorations="Underline" TextColor="#64748B" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+
+    </Grid>
 
 </ContentPage>

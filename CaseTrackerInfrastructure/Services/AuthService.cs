@@ -45,6 +45,18 @@ namespace CaseTrackerInfrastructure.Services
 
             _db.Users.Add(user);
 
+            // Assign default Lawyer role (R001)
+            var userRole = new UserRole
+            {
+                UserId = user.UserId,
+                RoleId = "R001",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = "System",
+                UpdatedBy = "System"
+            };
+            _db.UserRoles.Add(userRole);
+
             Guid? lawFirmId = null;
 
             if (request.RegisterType == CaseTrackerApplication.DTOs.RegisterType.Organization && request.LawFirm != null)
@@ -75,7 +87,12 @@ namespace CaseTrackerInfrastructure.Services
                         LawFirmId = Guid.NewGuid(),
                         FirmName = request.LawFirm.FirmName,
                         RegistrationNumber = request.LawFirm.RegistrationNumber,
-                        AddressLine1 = request.LawFirm.AddressJson ?? string.Empty,
+                        AddressLine1 = request.LawFirm.AddressLine1 ?? string.Empty,
+                        AddressLine2 = request.LawFirm.AddressLine2,
+                        City = request.LawFirm.City ?? string.Empty,
+                        District = request.LawFirm.District ?? string.Empty,
+                        State = request.LawFirm.State ?? string.Empty,
+                        Pincode = request.LawFirm.Pincode ?? 0,
                         CreatedAt = DateTimeOffset.UtcNow,
                         UpdatedAt = DateTimeOffset.UtcNow
                     };
@@ -98,6 +115,22 @@ namespace CaseTrackerInfrastructure.Services
 
                 _db.UserLawFirms.Add(membership);
             }
+
+            // Create Advocate / Lawyer profile record
+            var lawyerProfile = new Lawyer
+            {
+                LawyerId = Guid.NewGuid(),
+                UserId = user.UserId,
+                LawFirmId = lawFirmId,
+                FullName = request.FullName,
+                BarCouncilId = request.BarCouncilId,
+                BarCouncilName = request.BarCouncilName,
+                EnrollmentDate = request.EnrollmentDate,
+                Status = "Active",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            _db.Lawyers.Add(lawyerProfile);
 
             await _db.SaveChangesAsync();
             await tx.CommitAsync();

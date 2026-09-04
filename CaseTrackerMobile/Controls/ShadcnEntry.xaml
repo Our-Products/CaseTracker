@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CaseTrackerMobile.Controls.ShadcnEntry"
+             x:Name="thisControl">
+
+    <VerticalStackLayout Spacing="5">
+        
+        <!-- Label Header Row -->
+        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding LabelText, Source={x:Reference thisControl}, Converter={StaticResource Key=IsNotNullOrEmptyConverter}, FallbackValue=True}">
+            <Label Grid.Column="0"
+                   Text="{Binding LabelText, Source={x:Reference thisControl}}"
+                   FontSize="13"
+                   FontAttributes="Bold"
+                   TextColor="#334155" />
+
+            <Label Grid.Column="1"
+                   Text="{Binding RightLabelText, Source={x:Reference thisControl}}"
+                   FontSize="12"
+                   FontAttributes="Bold"
+                   TextColor="#113979"
+                   IsVisible="{Binding RightLabelText, Source={x:Reference thisControl}, Converter={StaticResource Key=IsNotNullOrEmptyConverter}}"
+                   VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding RightLabelCommand, Source={x:Reference thisControl}}" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+
+        <!-- Input Box Container -->
+        <Border x:Name="InputBorder"
+                Stroke="#E2E8F0"
+                StrokeThickness="1"
+                BackgroundColor="#F8FAFC"
+                Padding="0">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="8" />
+            </Border.StrokeShape>
+
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                
+                <!-- Optional Country / Prefix Badge Box -->
+                <Border Grid.Column="0"
+                        BackgroundColor="#F1F5F9"
+                        Stroke="#E2E8F0"
+                        StrokeThickness="0,0,1,0"
+                        Padding="12,10"
+                        IsVisible="{Binding PrefixText, Source={x:Reference thisControl}, Converter={StaticResource Key=IsNotNullOrEmptyConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8,0,0,8" />
+                    </Border.StrokeShape>
+                    <Label Text="{Binding PrefixText, Source={x:Reference thisControl}}"
+                           FontSize="13"
+                           FontAttributes="Bold"
+                           TextColor="#1E293B"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- Zero-Underline Custom Entry -->
+                <Entry x:Name="NativeEntry"
+                       Grid.Column="1"
+                       Text="{Binding Text, Source={x:Reference thisControl}, Mode=TwoWay}"
+                       Placeholder="{Binding Placeholder, Source={x:Reference thisControl}}"
+                       IsPassword="{Binding IsPassword, Source={x:Reference thisControl}}"
+                       Keyboard="{Binding Keyboard, Source={x:Reference thisControl}}"
+                       TextColor="#0F172A"
+                       PlaceholderColor="#94A3B8"
+                       FontSize="14"
+                       Margin="12,0"
+                       HeightRequest="46"
+                       VerticalOptions="Center"
+                       Focused="OnEntryFocused"
+                       Unfocused="OnEntryUnfocused" />
+
+                <!-- Optional Trailing Action Button (e.g. Eye Icon Toggle) -->
+                <Button Grid.Column="2"
+                        Text="{Binding TrailingActionText, Source={x:Reference thisControl}}"
+                        Command="{Binding TrailingActionCommand, Source={x:Reference thisControl}}"
+                        IsVisible="{Binding ShowTrailingAction, Source={x:Reference thisControl}}"
+                        FontSize="14"
+                        BackgroundColor="Transparent"
+                        TextColor="#64748B"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        Padding="0"
+                        Margin="0,0,4,0" />
+            </Grid>
+        </Border>
+
+        <!-- Inline Error Message Display -->
+        <Label Text="{Binding ErrorText, Source={x:Reference thisControl}}"
+               FontSize="11"
+               TextColor="#EF4444"
+               FontAttributes="Bold"
+               Margin="4,0,0,0"
+               IsVisible="{Binding HasError, Source={x:Reference thisControl}}" />
+
+    </VerticalStackLayout>
+</ContentView>
