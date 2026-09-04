@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CaseTrackerMobile.Views.StartupSplashPage"
+             BackgroundColor="#0D1117"
+             Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="*, Auto">
+        <!-- Main Centered Content: 3D Scales Logo & App Title -->
+        <VerticalStackLayout Grid.Row="0"
+                             VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="24">
+            
+            <!-- 3D Golden Scales Image Container -->
+            <Border x:Name="ScalesLogoBorder"
+                    WidthRequest="180"
+                    HeightRequest="180"
+                    BackgroundColor="Transparent"
+                    StrokeThickness="0"
+                    HorizontalOptions="Center">
+                <Grid>
+                    <!-- Glowing Ambient Ring -->
+                    <Border WidthRequest="170"
+                            HeightRequest="170"
+                            BackgroundColor="#111827"
+                            Stroke="#F59E0B"
+                            StrokeThickness="1.5"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="85" />
+                        </Border.StrokeShape>
+                        <Border.Shadow>
+                            <Shadow Brush="#F59E0B" Offset="0,0" Radius="25" Opacity="0.3" />
+                        </Border.Shadow>
+                    </Border>
+
+                    <!-- 3D Scales Image -->
+                    <Image Source="legal_scales_3d.jpg"
+                           WidthRequest="140"
+                           HeightRequest="140"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
+            <!-- App Title & Subtitle -->
+            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label Text="CTRACKER"
+                       TextColor="#F59E0B"
+                       FontSize="28"
+                       FontAttributes="Bold"
+                       CharacterSpacing="4"
+                       HorizontalOptions="Center" />
+
+                <Label Text="Advocate Legal Management Workspace"
+                       TextColor="#9CA3AF"
+                       FontSize="13"
+                       CharacterSpacing="1"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+
+            <!-- Loading Spinner & Status Text -->
+            <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
+                <ActivityIndicator IsRunning="True"
+                                   Color="#F59E0B"
+                                   HeightRequest="28"
+                                   WidthRequest="28"
+                                   HorizontalOptions="Center" />
+
+                <Label x:Name="StatusLabel"
+                       Text="Initializing Secure Workspace..."
+                       TextColor="#6B7280"
+                       FontSize="12"
+                       HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Bottom Footer Badge -->
+        <Border Grid.Row="1"
+                BackgroundColor="#161B22"
+                Stroke="#30363D"
+                StrokeThickness="1"
+                Padding="16,8"
+                Margin="0,0,0,24"
+                HorizontalOptions="Center">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20" />
+            </Border.StrokeShape>
+            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                <Label Text="🛡️" FontSize="12" />
+                <Label Text="eCourts Core • EF Virtual DB Engine v1.0"
+                       TextColor="#8B949E"
+                       FontSize="11"
+                       FontAttributes="Bold" />
+            </HorizontalStackLayout>
+        </Border>
+    </Grid>
+
+</ContentPage>
