@@ -40,6 +40,25 @@
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Advocate Registration" FontAttributes="Bold" FontSize="16" HorizontalOptions="Center" />
 
+                    <!-- Registration type picker -->
+                    <Label Text="Register As" FontSize="14" />
+                    <Picker Title="Select type" SelectedIndex="{Binding SelectedRegisterTypeIndex}" >
+                        <Picker.Items>
+                            <x:String>Individual</x:String>
+                            <x:String>Organization</x:String>
+                        </Picker.Items>
+                    </Picker>
+
+                    <!-- Law firm details shown only when Associates selected -->
+                    <Frame IsVisible="{Binding IsAssociates}" Padding="10" CornerRadius="8" BackgroundColor="#F5F5F5">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Law Firm Details" FontAttributes="Bold" />
+                            <Entry Text="{Binding LawFirmName}" Placeholder="Firm Name" />
+                            <Entry Text="{Binding LawFirmRegistration}" Placeholder="Registration Number" />
+                            <Editor Text="{Binding LawFirmAddress}" Placeholder="Address (optional)" AutoSize="TextChanges" HeightRequest="80" />
+                        </VerticalStackLayout>
+                    </Frame>
+
                     <Entry Text="{Binding FullName}" Placeholder="Full Name" />
                     <Entry Text="{Binding MobileNumber}" Placeholder="Mobile Number" Keyboard="Telephone" />
                     <Entry Text="{Binding Email}" Placeholder="Email Address" Keyboard="Email" />

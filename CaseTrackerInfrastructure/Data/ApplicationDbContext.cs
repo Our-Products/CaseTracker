@@ -1,4 +1,5 @@
 ﻿using CaseTrackerDomain.Models;
+using System;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseTrackerInfrastructure.Data
@@ -54,10 +55,12 @@ namespace CaseTrackerInfrastructure.Data
                     .HasColumnName("updated_by");
 
                 entity.HasIndex(e => e.MobileNumber)
-                    .HasDatabaseName("ix_users_mobile_number");
+                    .IsUnique()
+                    .HasDatabaseName("ux_users_mobile_number");
 
                 entity.HasIndex(e => e.Email)
-                    .HasDatabaseName("ix_users_email");
+                    .IsUnique()
+                    .HasDatabaseName("ux_users_email");
 
                 entity.HasIndex(e => e.Status)
                     .HasDatabaseName("ix_users_status");
@@ -101,6 +104,9 @@ namespace CaseTrackerInfrastructure.Data
 
                 entity.Property(e => e.UpdatedAt)
                     .HasColumnName("updated_at");
+
+                entity.HasIndex(e => e.FirmName)
+                    .HasDatabaseName("ix_law_firms_firm_name");
             });
 
             modelBuilder.Entity<Lawyer>(entity =>
@@ -142,6 +148,12 @@ namespace CaseTrackerInfrastructure.Data
                 entity.HasIndex(e => e.UserId)
                     .IsUnique()
                     .HasDatabaseName("ix_lawyers_user_id");
+
+                // Additional indexes for queries
+                entity.HasIndex(e => e.BarCouncilId)
+                    .HasDatabaseName("ix_lawyers_bar_council_id");
+                entity.HasIndex(e => e.Status)
+                    .HasDatabaseName("ix_lawyers_status");
 
                 entity.HasOne(l => l.User)
                     .WithMany()
@@ -198,24 +210,66 @@ namespace CaseTrackerInfrastructure.Data
                 entity.Property(e => e.RoleId)
                     .HasColumnName("role_id");
 
+                entity.Property(e => e.RoleId)
+                    .HasColumnName("role_id")
+                    .HasMaxLength(20)
+                    .IsRequired();
+
                 entity.Property(e => e.RoleName)
-                    .HasColumnName("role_name");
+                    .HasColumnName("role_name")
+                    .HasMaxLength(50)
+                    .IsRequired();
 
                 entity.Property(e => e.Description)
                     .HasColumnName("description");
 
                 entity.Property(e => e.Status)
-                    .HasColumnName("status");
+                    .HasColumnName("status")
+                    .HasMaxLength(20)
+                    .IsRequired();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasColumnName("created_at");
+                    .HasColumnName("created_at")
+                    .HasColumnType("timestamptz");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasColumnName("updated_at");
+                    .HasColumnName("updated_at")
+                    .HasColumnType("timestamptz");
 
                 entity.HasIndex(e => e.RoleName)
                     .IsUnique()
                     .HasDatabaseName("ix_roles_role_name");
+
+                // Seed default roles required during migration
+                entity.HasData(
+                    new Role
+                    {
+                        RoleId = "R001",
+                        RoleName = "Lawyer",
+                        Description = "Legal professional who manages cases and clients",
+                        Status = "Active",
+                        CreatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                        UpdatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                    },
+                    new Role
+                    {
+                        RoleId = "R002",
+                        RoleName = "Staff",
+                        Description = "Staff member who assists lawyers",
+                        Status = "Active",
+                        CreatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                        UpdatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                    },
+                    new Role
+                    {
+                        RoleId = "R003",
+                        RoleName = "Admin",
+                        Description = "Law-firm administrator",
+                        Status = "Active",
+                        CreatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                        UpdatedAt = new DateTimeOffset(2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                    }
+                );
             });
 
             modelBuilder.Entity<UserRole>(entity =>
@@ -231,16 +285,22 @@ namespace CaseTrackerInfrastructure.Data
                     .HasColumnName("role_id");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasColumnName("created_at");
+                    .HasColumnName("created_at")
+                    .HasColumnType("timestamptz");
 
                 entity.Property(e => e.UpdatedAt)
-                    .HasColumnName("updated_at");
+                    .HasColumnName("updated_at")
+                    .HasColumnType("timestamptz");
 
                 entity.Property(e => e.CreatedBy)
-                    .HasColumnName("created_by");
+                    .HasColumnName("created_by")
+                    .HasMaxLength(255)
+                    .IsRequired();
 
                 entity.Property(e => e.UpdatedBy)
-                    .HasColumnName("updated_by");
+                    .HasColumnName("updated_by")
+                    .HasMaxLength(255)
+                    .IsRequired();
 
                 entity.HasOne(ur => ur.User)
                     .WithMany()

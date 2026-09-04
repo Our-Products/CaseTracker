@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Migrations are included by default by the SDK; no explicit Include needed -->
+
   <ItemGroup>
     <ProjectReference Include="..\CaseTrackerApplication\CaseTrackerApplication.csproj" />
     <ProjectReference Include="..\CaseTrackerDomain\CaseTrackerDomain.csproj" />
