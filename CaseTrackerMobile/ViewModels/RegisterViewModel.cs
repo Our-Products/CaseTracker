@@ -40,6 +40,21 @@ namespace CaseTrackerMobile.ViewModels
         string _barCouncilNumber = string.Empty;
         public string BarCouncilNumber { get => _barCouncilNumber; set { _barCouncilNumber = value; OnPropertyChanged(); } }
 
+        // Registration type: 0 = Individual, 1 = Associates/Organization
+        int _selectedRegisterTypeIndex = 0;
+        public int SelectedRegisterTypeIndex { get => _selectedRegisterTypeIndex; set { _selectedRegisterTypeIndex = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsAssociates)); } }
+
+        public bool IsAssociates => SelectedRegisterTypeIndex == 1;
+
+        string _lawFirmName = string.Empty;
+        public string LawFirmName { get => _lawFirmName; set { _lawFirmName = value; OnPropertyChanged(); } }
+
+        string _lawFirmRegistration = string.Empty;
+        public string LawFirmRegistration { get => _lawFirmRegistration; set { _lawFirmRegistration = value; OnPropertyChanged(); } }
+
+        string _lawFirmAddress = string.Empty;
+        public string LawFirmAddress { get => _lawFirmAddress; set { _lawFirmAddress = value; OnPropertyChanged(); } }
+
         public ObservableCollection<string> States { get; }
 
         string _selectedState;
@@ -89,8 +104,19 @@ namespace CaseTrackerMobile.ViewModels
                     FullName = FullName.Trim(),
                     MobileNumber = MobileNumber.Trim(),
                     Email = string.IsNullOrWhiteSpace(Email) ? null : Email.Trim(),
-                    Password = Password
+                    Password = Password,
+                    RegisterType = (CaseTrackerApplication.DTOs.RegisterType)SelectedRegisterTypeIndex
                 };
+
+                if (IsAssociates)
+                {
+                    req.LawFirm = new CaseTrackerApplication.DTOs.LawFirmDto
+                    {
+                        FirmName = LawFirmName?.Trim() ?? string.Empty,
+                        RegistrationNumber = string.IsNullOrWhiteSpace(LawFirmRegistration) ? null : LawFirmRegistration.Trim(),
+                        AddressJson = string.IsNullOrWhiteSpace(LawFirmAddress) ? null : LawFirmAddress.Trim()
+                    };
+                }
 
                 var result = await _authService.RegisterAsync(req);
                 if (result == null)

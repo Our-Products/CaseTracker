@@ -1,8 +1,5 @@
-Add-Migration {migrationName}
--Context Infrastructure.Data.ApplicationDbContext
--Project Infrastructure -StartupProject CaseTracker
+Add-Migration Initial-1 -Context CaseTrackerInfrastructure.Data.ApplicationDbContext -Project CaseTrackerInfrastructure -StartupProject CaseTracker
 
-Update-Database
--Project Infrastructure
--StartupProject CaseTracker 
--Context Infrastructure.Data.ApplicationDbContext
+
+
+update-database

@@ -1,7 +1,9 @@
 using CaseTrackerApplication.DTOs;
 using CaseTrackerApplication.Interfaces;
 using CaseTrackerDomain.Models;
+using CaseTrackerInfrastructure.Data;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -12,11 +14,13 @@ namespace CaseTrackerInfrastructure.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
 
-        public AuthService(IUserRepository userRepository, IConfiguration config)
+        public AuthService(IUserRepository userRepository, ApplicationDbContext db, IConfiguration config)
         {
             _userRepository = userRepository;
+            _db = db;
             _config = config;
         }
 
@@ -36,12 +40,70 @@ namespace CaseTrackerInfrastructure.Services
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
+            // Persist user and optional related entities in a single transaction
+            await using var tx = await _db.Database.BeginTransactionAsync();
 
-            await _userRepository.AddAsync(user);
-            await _userRepository.SaveChangesAsync();
+            _db.Users.Add(user);
+
+            Guid? lawFirmId = null;
+
+            if (request.RegisterType == CaseTrackerApplication.DTOs.RegisterType.Organization && request.LawFirm != null)
+            {
+                // Try to find existing law firm by registration number (preferred) or by name
+                LawFirm? existing = null;
+                if (!string.IsNullOrWhiteSpace(request.LawFirm.RegistrationNumber))
+                {
+                    existing = await _db.LawFirms
+                        .FirstOrDefaultAsync(l => l.RegistrationNumber == request.LawFirm.RegistrationNumber);
+                }
+
+                if (existing == null && !string.IsNullOrWhiteSpace(request.LawFirm.FirmName))
+                {
+                    existing = await _db.LawFirms
+                        .FirstOrDefaultAsync(l => l.FirmName.ToLower() == request.LawFirm.FirmName.ToLower());
+                }
+
+                LawFirm lf;
+                if (existing != null)
+                {
+                    lf = existing;
+                }
+                else
+                {
+                    lf = new LawFirm
+                    {
+                        LawFirmId = Guid.NewGuid(),
+                        FirmName = request.LawFirm.FirmName,
+                        RegistrationNumber = request.LawFirm.RegistrationNumber,
+                        AddressLine1 = request.LawFirm.AddressJson ?? string.Empty,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+
+                    _db.LawFirms.Add(lf);
+                }
+
+                await _db.SaveChangesAsync(); // ensure lf.LawFirmId is generated if new
+                lawFirmId = lf.LawFirmId;
+
+                var membership = new UserLawFirm
+                {
+                    UserId = user.UserId,
+                    LawFirmId = lf.LawFirmId,
+                    JoinedAt = DateTimeOffset.UtcNow,
+                    Status = "Active",
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+
+                _db.UserLawFirms.Add(membership);
+            }
+
+            await _db.SaveChangesAsync();
+            await tx.CommitAsync();
 
             var token = CreateToken(user);
-            return new AuthResult { Token = token, ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()) };
+            return new AuthResult { Token = token, ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()), UserId = user.UserId, LawFirmId = lawFirmId };
         }
 
         public async Task<AuthResult> LoginAsync(LoginRequest request)

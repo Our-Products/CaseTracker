@@ -4,7 +4,8 @@ namespace CaseTrackerDomain.Models
 {
     public class Role
     {
-        public Guid RoleId { get; set; }
+        // Role id is a string (e.g. "R001") per requirements
+        public required string RoleId { get; set; }
 
         public string RoleName { get; set; } = null!;
 
