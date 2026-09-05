@@ -10,6 +10,23 @@ namespace CaseTrackerMobile
     {
         public static MauiApp CreateMauiApp()
         {
+#if ANDROID
+            Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (sender, args) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"ANDROID UNHANDLED EXCEPTION: {args.Exception?.Message}");
+                args.Handled = true;
+            };
+#endif
+
+            try
+            {
+                SQLitePCL.Batteries_V2.Init();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SQLite init notice: {ex.Message}");
+            }
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -20,8 +37,6 @@ namespace CaseTrackerMobile
                     // Add Font Awesome Solid font (fa-solid-900.ttf in Resources/Fonts)
                     fonts.AddFont("fa-solid-900.ttf", "FontAwesomeSolid");
                 });
-
-            // Configure global handler mappings to remove native underlines & borders safely
             Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
             {
 #if ANDROID
