@@ -47,6 +47,7 @@ namespace CaseTrackerApplication.DTOs
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+
             if (RegisterType == RegisterType.Organization)
             {
                 if (LawFirm == null)

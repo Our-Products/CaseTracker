@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CaseTrackerInfrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial2 : Migration
+    public partial class Initial1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,14 +18,14 @@ namespace CaseTrackerInfrastructure.Migrations
                 columns: table => new
                 {
                     law_firm_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    firm_name = table.Column<string>(type: "text", nullable: false),
-                    registration_number = table.Column<string>(type: "text", nullable: true),
-                    address_line1 = table.Column<string>(type: "text", nullable: false),
-                    address_line2 = table.Column<string>(type: "text", nullable: true),
-                    city = table.Column<string>(type: "text", nullable: false),
-                    district = table.Column<string>(type: "text", nullable: false),
-                    state = table.Column<string>(type: "text", nullable: false),
-                    pincode = table.Column<int>(type: "integer", nullable: false),
+                    firm_name = table.Column<string>(type: "character varying(255)", nullable: false),
+                    registration_number = table.Column<string>(type: "character varying(255)", nullable: false),
+                    address_line1 = table.Column<string>(type: "json", nullable: true),
+                    address_line2 = table.Column<string>(type: "json", nullable: true),
+                    city = table.Column<string>(type: "character varying(255)", nullable: true),
+                    district = table.Column<string>(type: "character varying(255)", nullable: true),
+                    state = table.Column<string>(type: "character varying(255)", nullable: true),
+                    pincode = table.Column<int>(type: "integer", nullable: true),
                     created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
@@ -171,6 +171,12 @@ namespace CaseTrackerInfrastructure.Migrations
                 name: "ix_law_firms_firm_name",
                 table: "law_firms",
                 column: "firm_name");
+
+            migrationBuilder.CreateIndex(
+                name: "ux_law_firms_registration_number",
+                table: "law_firms",
+                column: "registration_number",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_lawyers_bar_council_id",

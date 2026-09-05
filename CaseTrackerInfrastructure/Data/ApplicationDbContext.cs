@@ -76,25 +76,34 @@ namespace CaseTrackerInfrastructure.Data
                     .HasColumnName("law_firm_id");
 
                 entity.Property(e => e.FirmName)
-                    .HasColumnName("firm_name");
+                    .HasColumnName("firm_name")
+                    .HasColumnType("character varying(255)")
+                    .IsRequired();
 
                 entity.Property(e => e.RegistrationNumber)
-                    .HasColumnName("registration_number");
+                    .HasColumnName("registration_number")
+                    .HasColumnType("character varying(255)")
+                    .IsRequired();
 
                 entity.Property(e => e.AddressLine1)
-                    .HasColumnName("address_line1");
+                    .HasColumnName("address_line1")
+                    .HasColumnType("json");
 
                 entity.Property(e => e.AddressLine2)
-                    .HasColumnName("address_line2");
+                    .HasColumnName("address_line2")
+                    .HasColumnType("json");
 
                 entity.Property(e => e.City)
-                    .HasColumnName("city");
+                    .HasColumnName("city")
+                    .HasColumnType("character varying(255)");
 
                 entity.Property(e => e.District)
-                    .HasColumnName("district");
+                    .HasColumnName("district")
+                    .HasColumnType("character varying(255)");
 
                 entity.Property(e => e.State)
-                    .HasColumnName("state");
+                    .HasColumnName("state")
+                    .HasColumnType("character varying(255)");
 
                 entity.Property(e => e.Pincode)
                     .HasColumnName("pincode");
@@ -107,6 +116,10 @@ namespace CaseTrackerInfrastructure.Data
 
                 entity.HasIndex(e => e.FirmName)
                     .HasDatabaseName("ix_law_firms_firm_name");
+
+                entity.HasIndex(e => e.RegistrationNumber)
+                    .IsUnique()
+                    .HasDatabaseName("ux_law_firms_registration_number");
             });
 
             modelBuilder.Entity<Lawyer>(entity =>

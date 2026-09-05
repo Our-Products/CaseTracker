@@ -30,17 +30,15 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("law_firm_id");
 
                     b.Property<string>("AddressLine1")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("json")
                         .HasColumnName("address_line1");
 
                     b.Property<string>("AddressLine2")
-                        .HasColumnType("text")
+                        .HasColumnType("json")
                         .HasColumnName("address_line2");
 
                     b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("city");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -48,26 +46,25 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("District")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("district");
 
                     b.Property<string>("FirmName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("firm_name");
 
-                    b.Property<int>("Pincode")
+                    b.Property<int?>("Pincode")
                         .HasColumnType("integer")
                         .HasColumnName("pincode");
 
                     b.Property<string>("RegistrationNumber")
-                        .HasColumnType("text")
+                        .IsRequired()
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("registration_number");
 
                     b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("state");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -78,6 +75,10 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.HasIndex("FirmName")
                         .HasDatabaseName("ix_law_firms_firm_name");
+
+                    b.HasIndex("RegistrationNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ux_law_firms_registration_number");
 
                     b.ToTable("law_firms", (string)null);
                 });
