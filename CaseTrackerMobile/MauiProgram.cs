@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using CaseTrackerMobile.Services;
 using CaseTrackerMobile.ViewModels;
@@ -10,6 +10,23 @@ namespace CaseTrackerMobile
     {
         public static MauiApp CreateMauiApp()
         {
+#if ANDROID
+            Android.Runtime.AndroidEnvironment.UnhandledExceptionRaiser += (sender, args) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"ANDROID UNHANDLED EXCEPTION: {args.Exception?.Message}");
+                args.Handled = true;
+            };
+#endif
+
+            try
+            {
+                SQLitePCL.Batteries_V2.Init();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SQLite init notice: {ex.Message}");
+            }
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -17,11 +34,30 @@ namespace CaseTrackerMobile
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                    // Add Font Awesome Solid font (place fa-solid-900.ttf into Resources/Fonts)
+                    // Add Font Awesome Solid font (fa-solid-900.ttf in Resources/Fonts)
                     fonts.AddFont("fa-solid-900.ttf", "FontAwesomeSolid");
-                    // Add Material Icons font (place MaterialIcons-Regular.ttf into Resources/Fonts)
-                    fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
                 });
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
+            {
+#if ANDROID
+                h.PlatformView.Background = null;
+#elif IOS || MACCATALYST
+                h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+#endif
+            });
+
+            Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
+            {
+#if ANDROID
+                h.PlatformView.Background = null;
+#elif IOS || MACCATALYST
+                h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
+#elif WINDOWS
+                h.PlatformView.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+#endif
+            });
 
 #if DEBUG
     		builder.Logging.AddDebug();
@@ -32,31 +68,26 @@ namespace CaseTrackerMobile
             // bypassing TLS validation in DEBUG when using emulators. Adjust ports/host as needed.
 #if DEBUG
             string apiBaseAddress;
-            var platform = Microsoft.Maui.Devices.DeviceInfo.Platform;
-            if (platform == Microsoft.Maui.Devices.DevicePlatform.Android)
-            {
-                // Android emulator (AVD) routes host localhost to 10.0.2.2
-                apiBaseAddress = "https://10.0.2.2:7232/";
-            }
-            else if (platform == Microsoft.Maui.Devices.DevicePlatform.WinUI || platform == Microsoft.Maui.Devices.DevicePlatform.MacCatalyst || platform == Microsoft.Maui.Devices.DevicePlatform.iOS)
-            {
-                apiBaseAddress = "https://localhost:7232/";
-            }
-            else
-            {
-                apiBaseAddress = "https://localhost:7232/";
-            }
+#if ANDROID
+            apiBaseAddress = "https://10.0.2.2:7232/";
+#else
+            apiBaseAddress = "https://localhost:7232/";
+#endif
 
             var handler = new System.Net.Http.HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // DEBUG only: accept dev certs
             builder.Services.AddSingleton(new System.Net.Http.HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress) });
 #else
-            // Production / Release - use real API URL
-            builder.Services.AddSingleton(new System.Net.Http.HttpClient { BaseAddress = new Uri("https://your-production-api/") });
+            // Production / Release - fallback localhost
+            builder.Services.AddSingleton(new System.Net.Http.HttpClient { BaseAddress = new Uri("https://localhost:7232/") });
 #endif
             builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
+            builder.Services.AddTransient<DashboardViewModel>();
+            builder.Services.AddTransient<Views.LoginPage>();
+            builder.Services.AddTransient<Views.RegisterPage>();
+            builder.Services.AddTransient<Views.DashboardPage>();
 
             var app = builder.Build();
 
