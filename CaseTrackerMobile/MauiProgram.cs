@@ -17,10 +17,8 @@ namespace CaseTrackerMobile
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                    // Add Font Awesome Solid font (place fa-solid-900.ttf into Resources/Fonts)
+                    // Add Font Awesome Solid font (fa-solid-900.ttf in Resources/Fonts)
                     fonts.AddFont("fa-solid-900.ttf", "FontAwesomeSolid");
-                    // Add Material Icons font (place MaterialIcons-Regular.ttf into Resources/Fonts)
-                    fonts.AddFont("MaterialIcons-Regular.ttf", "MaterialIcons");
                 });
 
             // Configure global handler mappings to remove native underlines & borders

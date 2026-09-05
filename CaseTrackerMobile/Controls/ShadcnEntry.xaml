@@ -72,12 +72,13 @@
                        Focused="OnEntryFocused"
                        Unfocused="OnEntryUnfocused" />
 
-                <!-- Optional Trailing Action Button (e.g. Eye Icon Toggle) -->
+                <!-- Optional Trailing Action Button (e.g. FontAwesome Eye Icon Toggle) -->
                 <Button Grid.Column="2"
                         Text="{Binding TrailingActionText, Source={x:Reference thisControl}}"
                         Command="{Binding TrailingActionCommand, Source={x:Reference thisControl}}"
                         IsVisible="{Binding ShowTrailingAction, Source={x:Reference thisControl}}"
-                        FontSize="14"
+                        FontFamily="FontAwesomeSolid"
+                        FontSize="15"
                         BackgroundColor="Transparent"
                         TextColor="#64748B"
                         WidthRequest="44"

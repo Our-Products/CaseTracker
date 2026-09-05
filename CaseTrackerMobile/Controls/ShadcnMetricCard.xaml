@@ -36,7 +36,9 @@
                     </Border.StrokeShape>
                     <Grid HorizontalOptions="Center" VerticalOptions="Center">
                         <Label Text="{Binding MetricIcon, Source={x:Reference thisMetric}}"
+                               FontFamily="FontAwesomeSolid"
                                FontSize="16"
+                               TextColor="#113979"
                                HorizontalOptions="Center"
                                VerticalOptions="Center" />
                     </Grid>

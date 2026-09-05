@@ -63,8 +63,16 @@ namespace CaseTrackerMobile.ViewModels
         public bool IsPasswordHidden
         {
             get => _isPasswordHidden;
-            set => SetProperty(ref _isPasswordHidden, value);
+            set
+            {
+                if (SetProperty(ref _isPasswordHidden, value))
+                {
+                    OnPropertyChanged(nameof(PasswordToggleIcon));
+                }
+            }
         }
+
+        public string PasswordToggleIcon => IsPasswordHidden ? Helpers.FontAwesomeIcons.Eye : Helpers.FontAwesomeIcons.EyeSlash;
 
         private bool _isBusy;
         public bool IsBusy

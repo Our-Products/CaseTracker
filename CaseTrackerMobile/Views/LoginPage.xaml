@@ -24,7 +24,7 @@
                     <RoundRectangle CornerRadius="16" />
                 </Border.StrokeShape>
                 <Grid HorizontalOptions="Center" VerticalOptions="Center">
-                    <Label Text="🛡️" FontSize="26" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Label Text="&#xf3ed;" FontFamily="FontAwesomeSolid" FontSize="24" TextColor="#0B1528" HorizontalOptions="Center" VerticalOptions="Center" />
                 </Grid>
             </Border>
 
@@ -46,31 +46,42 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14" />
                     </Border.StrokeShape>
-                    <Label Text="🔒 Secure" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Label Text="&#xf023;" FontFamily="FontAwesomeSolid" FontSize="11" TextColor="#D4AF37" VerticalOptions="Center" />
+                        <Label Text="Secure" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
                 </Border>
 
                 <Border BackgroundColor="#16253D" StrokeThickness="1" Stroke="#233554" Padding="10,5">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14" />
                     </Border.StrokeShape>
-                    <Label Text="⚖️ Tamil Nadu" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Label Text="&#xf0e3;" FontFamily="FontAwesomeSolid" FontSize="11" TextColor="#D4AF37" VerticalOptions="Center" />
+                        <Label Text="Tamil Nadu" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
                 </Border>
 
                 <Border BackgroundColor="#16253D" StrokeThickness="1" Stroke="#233554" Padding="10,5">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="14" />
                     </Border.StrokeShape>
-                    <Label Text="📍 Puducherry" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                        <Label Text="&#xf19c;" FontFamily="FontAwesomeSolid" FontSize="11" TextColor="#D4AF37" VerticalOptions="Center" />
+                        <Label Text="Puducherry" FontSize="11" TextColor="#CBD5E1" FontAttributes="Bold" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
                 </Border>
             </HorizontalStackLayout>
 
         </VerticalStackLayout>
 
-        <!-- White Card Sheet with Shadcn Components -->
+        <!-- White Card Sheet with Shadcn Components (Tablet Responsive MaxWidth=540) -->
         <ScrollView Grid.Row="1" VerticalOptions="End">
             <Border BackgroundColor="White"
                     StrokeThickness="0"
                     Padding="24,20,24,28"
+                    MaximumWidthRequest="540"
+                    HorizontalOptions="Center"
                     Margin="0">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="32,32,0,0" />
@@ -113,13 +124,13 @@
                                           Placeholder="Enter your password"
                                           IsPassword="{Binding IsPasswordHidden}"
                                           ShowTrailingAction="True"
-                                          TrailingActionText="👁"
+                                          TrailingActionText="{Binding PasswordToggleIcon}"
                                           TrailingActionCommand="{Binding TogglePasswordVisibilityCommand}"
                                           HasError="{Binding HasPasswordError}"
                                           ErrorText="{Binding PasswordError}" />
 
                     <!-- Primary Action Button with Shadcn Press Animation -->
-                    <controls:ShadcnButton Text="Sign In  ➔"
+                    <controls:ShadcnButton Text="Sign In"
                                           Command="{Binding ExecuteLoginCommand}"
                                           IsLoading="{Binding IsBusy}"
                                           ButtonColor="#113979"

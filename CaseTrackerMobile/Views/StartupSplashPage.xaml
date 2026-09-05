@@ -6,51 +6,39 @@
              Shell.NavBarIsVisible="False">
 
     <Grid RowDefinitions="*, Auto">
-        <!-- Main Centered Content: 3D Scales Logo & App Title -->
+        <!-- Main Centered Content: Video Loader & App Title -->
         <VerticalStackLayout Grid.Row="0"
                              VerticalOptions="Center"
                              HorizontalOptions="Center"
-                             Spacing="24">
+                             Spacing="20">
             
-            <!-- 3D Golden Scales Image Container -->
-            <Border x:Name="ScalesLogoBorder"
-                    WidthRequest="180"
-                    HeightRequest="180"
-                    BackgroundColor="Transparent"
-                    StrokeThickness="0"
+            <!-- Video Loader Card Container -->
+            <Border WidthRequest="260"
+                    HeightRequest="260"
+                    BackgroundColor="#0D1117"
+                    Stroke="#F59E0B"
+                    StrokeThickness="1.5"
                     HorizontalOptions="Center">
-                <Grid>
-                    <!-- Glowing Ambient Ring -->
-                    <Border WidthRequest="170"
-                            HeightRequest="170"
-                            BackgroundColor="#111827"
-                            Stroke="#F59E0B"
-                            StrokeThickness="1.5"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="85" />
-                        </Border.StrokeShape>
-                        <Border.Shadow>
-                            <Shadow Brush="#F59E0B" Offset="0,0" Radius="25" Opacity="0.3" />
-                        </Border.Shadow>
-                    </Border>
-
-                    <!-- 3D Scales Image -->
-                    <Image Source="legal_scales_3d.jpg"
-                           WidthRequest="140"
-                           HeightRequest="140"
-                           Aspect="AspectFit"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center" />
-                </Grid>
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="20" />
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#F59E0B" Offset="0,0" Radius="20" Opacity="0.3" />
+                </Border.Shadow>
+                
+                <WebView x:Name="LoaderVideoView"
+                         BackgroundColor="#0D1117"
+                         HeightRequest="256"
+                         WidthRequest="256"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center" />
             </Border>
 
             <!-- App Title & Subtitle -->
-            <VerticalStackLayout Spacing="6" HorizontalOptions="Center">
+            <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
                 <Label Text="CTRACKER"
                        TextColor="#F59E0B"
-                       FontSize="28"
+                       FontSize="26"
                        FontAttributes="Bold"
                        CharacterSpacing="4"
                        HorizontalOptions="Center" />
@@ -62,23 +50,18 @@
                        HorizontalOptions="Center" />
             </VerticalStackLayout>
 
-            <!-- Loading Spinner & Status Text -->
-            <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,20,0,0">
-                <ActivityIndicator IsRunning="True"
-                                   Color="#F59E0B"
-                                   HeightRequest="28"
-                                   WidthRequest="28"
-                                   HorizontalOptions="Center" />
-
+            <!-- Loading Status Text -->
+            <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,6,0,0">
                 <Label x:Name="StatusLabel"
-                       Text="Initializing Secure Workspace..."
-                       TextColor="#6B7280"
+                       Text="Loading Advocate Environment..."
+                       TextColor="#93C5FD"
                        FontSize="12"
+                       FontAttributes="Bold"
                        HorizontalOptions="Center" />
             </VerticalStackLayout>
         </VerticalStackLayout>
 
-        <!-- Bottom Footer Badge -->
+        <!-- Bottom Footer Badge with FontAwesome Shield -->
         <Border Grid.Row="1"
                 BackgroundColor="#161B22"
                 Stroke="#30363D"
@@ -89,12 +72,13 @@
             <Border.StrokeShape>
                 <RoundRectangle CornerRadius="20" />
             </Border.StrokeShape>
-            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                <Label Text="🛡️" FontSize="12" />
+            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                <Label Text="&#xf3ed;" FontFamily="FontAwesomeSolid" FontSize="13" TextColor="#F59E0B" VerticalOptions="Center" />
                 <Label Text="eCourts Core • EF Virtual DB Engine v1.0"
                        TextColor="#8B949E"
                        FontSize="11"
-                       FontAttributes="Bold" />
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
             </HorizontalStackLayout>
         </Border>
     </Grid>

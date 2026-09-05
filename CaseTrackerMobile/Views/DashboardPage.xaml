@@ -15,7 +15,7 @@
                 BackgroundColor="#113979"
                 StrokeThickness="0"
                 Padding="20,16">
-            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12">
+            <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" MaximumWidthRequest="960" HorizontalOptions="FillAndExpand">
                 <!-- Advocate Avatar Pill -->
                 <Border Grid.Column="0"
                         WidthRequest="48"
@@ -26,8 +26,10 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="24" />
                     </Border.StrokeShape>
-                    <Label Text="⚖️"
-                           FontSize="22"
+                    <Label Text="&#xf0e3;"
+                           FontFamily="FontAwesomeSolid"
+                           FontSize="20"
+                           TextColor="#D4AF37"
                            HorizontalOptions="Center"
                            VerticalOptions="Center" />
                 </Border>
@@ -60,37 +62,37 @@
             </Grid>
         </Border>
 
-        <!-- Main Scrollable Dashboard Content -->
+        <!-- Main Scrollable Dashboard Content (Tablet Responsive MaxWidth=960) -->
         <ScrollView Grid.Row="1" Padding="16">
-            <VerticalStackLayout Spacing="20">
+            <VerticalStackLayout Spacing="20" MaximumWidthRequest="960" HorizontalOptions="Center">
 
                 <!-- 4 Metrics Grid -->
                 <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" ColumnSpacing="12" RowSpacing="12">
                     <controls:ShadcnMetricCard Grid.Row="0" Grid.Column="0"
                                               MetricTitle="ACTIVE CASES"
                                               MetricValue="{Binding ActiveCasesCount}"
-                                              MetricIcon="⚖️"
+                                              MetricIcon="&#xf0e3;"
                                               IconBgColor="#EFF6FF"
                                               Subtitle="+3 new this month" />
 
                     <controls:ShadcnMetricCard Grid.Row="0" Grid.Column="1"
                                               MetricTitle="TODAY'S HEARINGS"
                                               MetricValue="{Binding TodaysHearingsCount}"
-                                              MetricIcon="🏛️"
+                                              MetricIcon="&#xf19c;"
                                               IconBgColor="#FEF3C7"
                                               Subtitle="High Court &amp; Sessions" />
 
                     <controls:ShadcnMetricCard Grid.Row="1" Grid.Column="0"
                                               MetricTitle="PENDING ORDERS"
                                               MetricValue="{Binding PendingOrdersCount}"
-                                              MetricIcon="📜"
+                                              MetricIcon="&#xf02d;"
                                               IconBgColor="#F3E8FF"
                                               Subtitle="Awaiting Order Copies" />
 
                     <controls:ShadcnMetricCard Grid.Row="1" Grid.Column="1"
                                               MetricTitle="TOTAL CLIENTS"
                                               MetricValue="{Binding TotalClientsCount}"
-                                              MetricIcon="👥"
+                                              MetricIcon="&#xf0c0;"
                                               IconBgColor="#ECFDF5"
                                               Subtitle="Active retainers" />
                 </Grid>
@@ -104,7 +106,7 @@
                                            Command="{Binding AddNewCaseCommand}" />
 
                     <controls:ShadcnButton Grid.Column="1"
-                                           Text="eCourts Sync 🔄"
+                                           Text="Sync Cause List"
                                            Variant="Outline"
                                            HeightRequest="46"
                                            Command="{Binding SearchCauseListCommand}" />
@@ -133,7 +135,7 @@
                         <!-- Search Input -->
                         <controls:ShadcnEntry LabelText=""
                                              Placeholder="Filter by Case No, Title or Court..."
-                                             LeadingIcon="🔍"
+                                             LeadingIcon="&#xf002;"
                                              Text="{Binding SearchText, Mode=TwoWay}" />
                     </VerticalStackLayout>
                 </controls:ShadcnCard>
@@ -214,12 +216,13 @@
                                                    TextColor="#1E293B" />
 
                                             <!-- Court Name -->
-                                            <HorizontalStackLayout Spacing="6">
-                                                <Label Text="🏛️" FontSize="13" />
+                                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                <Label Text="&#xf19c;" FontFamily="FontAwesomeSolid" FontSize="12" TextColor="#475569" VerticalOptions="Center" />
                                                 <Label Text="{Binding CourtName}"
                                                        FontSize="12"
                                                        TextColor="#475569"
-                                                       FontAttributes="Bold" />
+                                                       FontAttributes="Bold"
+                                                       VerticalOptions="Center" />
                                             </HorizontalStackLayout>
 
                                             <!-- Stage -->
@@ -229,14 +232,17 @@
                                                 <Border.StrokeShape>
                                                     <RoundRectangle CornerRadius="8" />
                                                 </Border.StrokeShape>
-                                                <HorizontalStackLayout Spacing="6">
-                                                    <Label Text="📌 Stage:"
+                                                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                                    <Label Text="&#xf08d;" FontFamily="FontAwesomeSolid" FontSize="11" TextColor="#334155" VerticalOptions="Center" />
+                                                    <Label Text="Stage:"
                                                            FontSize="12"
                                                            FontAttributes="Bold"
-                                                           TextColor="#334155" />
+                                                           TextColor="#334155"
+                                                           VerticalOptions="Center" />
                                                     <Label Text="{Binding Stage}"
                                                            FontSize="12"
-                                                           TextColor="#475569" />
+                                                           TextColor="#475569"
+                                                           VerticalOptions="Center" />
                                                 </HorizontalStackLayout>
                                             </Border>
                                         </VerticalStackLayout>
@@ -246,7 +252,7 @@
                         </CollectionView.ItemTemplate>
                         <CollectionView.EmptyView>
                             <VerticalStackLayout Spacing="10" HorizontalOptions="Center" Padding="40">
-                                <Label Text="🔍" FontSize="36" HorizontalOptions="Center" />
+                                <Label Text="&#xf002;" FontFamily="FontAwesomeSolid" FontSize="36" TextColor="#94A3B8" HorizontalOptions="Center" />
                                 <Label Text="No hearings found"
                                        FontSize="16"
                                        FontAttributes="Bold"

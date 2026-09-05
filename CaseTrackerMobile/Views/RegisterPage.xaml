@@ -30,11 +30,13 @@
                     VerticalOptions="Start" />
         </Grid>
 
-        <!-- Form Scroll Container -->
+        <!-- Form Scroll Container (Tablet Responsive MaxWidth=640) -->
         <ScrollView Grid.Row="1">
             <Border BackgroundColor="White"
                     StrokeThickness="0"
                     Padding="24,24,24,32"
+                    MaximumWidthRequest="640"
+                    HorizontalOptions="Center"
                     Margin="0">
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="32,32,0,0" />
@@ -164,7 +166,7 @@
                                           ErrorText="{Binding ConfirmPasswordError}" />
 
                     <!-- Submit Button -->
-                    <controls:ShadcnButton Text="Complete Registration  ➔"
+                    <controls:ShadcnButton Text="Complete Registration"
                                           Command="{Binding ExecuteRegisterCommand}"
                                           IsLoading="{Binding IsBusy}"
                                           ButtonColor="#113979"
