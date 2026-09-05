@@ -26,12 +26,41 @@
                     <Shadow Brush="#F59E0B" Offset="0,0" Radius="20" Opacity="0.3" />
                 </Border.Shadow>
                 
-                <WebView x:Name="LoaderVideoView"
-                         BackgroundColor="#0D1117"
-                         HeightRequest="256"
-                         WidthRequest="256"
-                         HorizontalOptions="Center"
-                         VerticalOptions="Center" />
+                <Grid HeightRequest="256" WidthRequest="256" HorizontalOptions="Center" VerticalOptions="Center">
+                    <WebView x:Name="LoaderVideoView"
+                             BackgroundColor="#0D1117"
+                             HeightRequest="256"
+                             WidthRequest="256"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center" />
+
+                    <!-- Fallback 3D Golden Scales Logo View -->
+                    <VerticalStackLayout x:Name="FallbackLogoView"
+                                         Spacing="12"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         IsVisible="False">
+                        <Border x:Name="ScalesLogoBorder"
+                                WidthRequest="110"
+                                HeightRequest="110"
+                                BackgroundColor="#161B22"
+                                Stroke="#F59E0B"
+                                StrokeThickness="2"
+                                HorizontalOptions="Center">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="55" />
+                            </Border.StrokeShape>
+                            <Grid HorizontalOptions="Center" VerticalOptions="Center">
+                                <Label Text="&#xf0e3;"
+                                       FontFamily="FontAwesomeSolid"
+                                       FontSize="52"
+                                       TextColor="#F59E0B"
+                                       HorizontalOptions="Center"
+                                       VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Grid>
             </Border>
 
             <!-- App Title & Subtitle -->

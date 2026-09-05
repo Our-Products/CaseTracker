@@ -21,12 +21,11 @@ namespace CaseTrackerMobile
                     fonts.AddFont("fa-solid-900.ttf", "FontAwesomeSolid");
                 });
 
-            // Configure global handler mappings to remove native underlines & borders
+            // Configure global handler mappings to remove native underlines & borders safely
             Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
             {
 #if ANDROID
                 h.PlatformView.Background = null;
-                h.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 #elif IOS || MACCATALYST
                 h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -38,7 +37,6 @@ namespace CaseTrackerMobile
             {
 #if ANDROID
                 h.PlatformView.Background = null;
-                h.PlatformView.SetBackgroundColor(Android.Graphics.Color.Transparent);
 #elif IOS || MACCATALYST
                 h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None;
 #elif WINDOWS
@@ -55,27 +53,18 @@ namespace CaseTrackerMobile
             // bypassing TLS validation in DEBUG when using emulators. Adjust ports/host as needed.
 #if DEBUG
             string apiBaseAddress;
-            var platform = Microsoft.Maui.Devices.DeviceInfo.Platform;
-            if (platform == Microsoft.Maui.Devices.DevicePlatform.Android)
-            {
-                // Android emulator (AVD) routes host localhost to 10.0.2.2
-                apiBaseAddress = "https://10.0.2.2:7232/";
-            }
-            else if (platform == Microsoft.Maui.Devices.DevicePlatform.WinUI || platform == Microsoft.Maui.Devices.DevicePlatform.MacCatalyst || platform == Microsoft.Maui.Devices.DevicePlatform.iOS)
-            {
-                apiBaseAddress = "https://localhost:7232/";
-            }
-            else
-            {
-                apiBaseAddress = "https://localhost:7232/";
-            }
+#if ANDROID
+            apiBaseAddress = "https://10.0.2.2:7232/";
+#else
+            apiBaseAddress = "https://localhost:7232/";
+#endif
 
             var handler = new System.Net.Http.HttpClientHandler();
             handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true; // DEBUG only: accept dev certs
             builder.Services.AddSingleton(new System.Net.Http.HttpClient(handler) { BaseAddress = new Uri(apiBaseAddress) });
 #else
-            // Production / Release - use real API URL
-            builder.Services.AddSingleton(new System.Net.Http.HttpClient { BaseAddress = new Uri("https://your-production-api/") });
+            // Production / Release - fallback localhost
+            builder.Services.AddSingleton(new System.Net.Http.HttpClient { BaseAddress = new Uri("https://localhost:7232/") });
 #endif
             builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddTransient<LoginViewModel>();

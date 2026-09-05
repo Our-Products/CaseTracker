@@ -9,18 +9,11 @@ namespace CaseTrackerMobile
         {
             InitializeComponent();
 
-            // Set StartupSplashPage directly as initial MainPage with #0D1117 baseline
-            MainPage = new Views.StartupSplashPage();
+            // Set AppShell directly as root MainPage to prevent Android activity lifecycle crashes
+            MainPage = new AppShell();
         }
 
         // Service provider populated in MauiProgram so pages/viewmodels can resolve services
         public static IServiceProvider Services { get; internal set; } = null!;
-
-        protected override Window CreateWindow(IActivationState? activationState)
-        {
-            var window = base.CreateWindow(activationState);
-            window.Page ??= MainPage;
-            return window;
-        }
     }
 }

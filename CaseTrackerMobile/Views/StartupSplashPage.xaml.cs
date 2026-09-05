@@ -76,25 +76,63 @@ namespace CaseTrackerMobile.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to load startup video: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Startup video notice: {ex.Message}");
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (FallbackLogoView != null)
+                    {
+                        FallbackLogoView.IsVisible = true;
+                    }
+                });
             }
 
-            // Allow video loader to play for a smooth branding intro
-            await Task.Delay(2500);
+            // Pulsing animation trigger
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (ScalesLogoBorder != null)
+                    {
+                        await ScalesLogoBorder.ScaleToAsync(1.08, 600, Easing.CubicOut);
+                        await ScalesLogoBorder.ScaleToAsync(1.0, 600, Easing.CubicIn);
+                    }
+                }
+                catch { }
+            });
+
+            // Allow video loader to play for a smooth intro
+            await Task.Delay(2200);
 
             if (StatusLabel != null)
             {
                 StatusLabel.Text = "Workspace Ready!";
             }
 
-            await Task.Delay(400);
+            await Task.Delay(300);
 
-            // Safely transition to AppShell on MainThread
-            MainThread.BeginInvokeOnMainThread(() =>
+            // Safely navigate to Login page via Shell
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                if (Application.Current != null)
+                try
                 {
-                    Application.Current.MainPage = new AppShell();
+                    // Unhook WebView source before unmounting to prevent Android WebView window detachment crash
+                    if (LoaderVideoView != null)
+                    {
+                        LoaderVideoView.Source = null;
+                    }
+
+                    if (Shell.Current != null)
+                    {
+                        await Shell.Current.GoToAsync("//Login");
+                    }
+                    else if (Application.Current != null && Application.Current.Windows.Count > 0)
+                    {
+                        Application.Current.Windows[0].Page = new AppShell();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Navigation error: {ex.Message}");
                 }
             });
         }
