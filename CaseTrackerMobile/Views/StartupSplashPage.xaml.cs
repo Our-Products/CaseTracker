@@ -7,6 +7,8 @@ namespace CaseTrackerMobile.Views
 {
     public partial class StartupSplashPage : ContentPage
     {
+        private bool _isInitializing = false;
+
         public StartupSplashPage()
         {
             InitializeComponent();
@@ -15,38 +17,35 @@ namespace CaseTrackerMobile.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await StartAppInitializationSequenceAsync();
+            if (!_isInitializing)
+            {
+                _isInitializing = true;
+                await StartAppInitializationSequenceAsync();
+            }
         }
 
         private async Task StartAppInitializationSequenceAsync()
         {
             try
             {
-                // Subtle pulse animation on the 3D logo
+                // Smooth sequential pulse animation on the 3D logo
                 if (ScalesLogoBorder != null)
                 {
-                    _ = ScalesLogoBorder.ScaleTo(1.05, 800, Easing.CubicInOut)
-                        .ContinueWith(_ => MainThread.BeginInvokeOnMainThread(async () =>
-                        {
-                            await ScalesLogoBorder.ScaleTo(1.0, 800, Easing.CubicInOut);
-                        }));
+                    await ScalesLogoBorder.ScaleToAsync(1.04, 400, Easing.CubicOut);
+                    await ScalesLogoBorder.ScaleToAsync(1.0, 400, Easing.CubicIn);
                 }
 
-                // Run background dependency boots & database check
-                await Task.Run(async () =>
-                {
-                    // Simulated dependency / virtual database startup
-                    await Task.Delay(1200);
-                });
+                // Dependency & Virtual Database pre-load
+                await Task.Delay(600);
 
                 if (StatusLabel != null)
                 {
                     StatusLabel.Text = "Workspace Ready!";
                 }
 
-                await Task.Delay(300);
+                await Task.Delay(200);
 
-                // Seamless Window Swap to AppShell on Main UI Thread
+                // Transition to AppShell safely on Main Thread
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     if (Application.Current != null)

@@ -1,8 +1,5 @@
 using System;
-using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace CaseTrackerMobile
 {
@@ -12,11 +9,8 @@ namespace CaseTrackerMobile
         {
             InitializeComponent();
 
-            // Establish lightweight, completely blank ContentPage with #0D1117 dark baseline
-            MainPage = new ContentPage
-            {
-                BackgroundColor = Color.FromArgb("#0D1117")
-            };
+            // Set StartupSplashPage directly as initial MainPage with #0D1117 baseline
+            MainPage = new Views.StartupSplashPage();
         }
 
         // Service provider populated in MauiProgram so pages/viewmodels can resolve services
@@ -27,38 +21,6 @@ namespace CaseTrackerMobile
             var window = base.CreateWindow(activationState);
             window.Page ??= MainPage;
             return window;
-        }
-
-        protected override async void OnStart()
-        {
-            base.OnStart();
-            await RunBackgroundAppBootSequenceAsync();
-        }
-
-        private async Task RunBackgroundAppBootSequenceAsync()
-        {
-            try
-            {
-                // Asynchronous background task for app boots & dependency setups
-                await Task.Run(async () =>
-                {
-                    await Task.Delay(100);
-                });
-
-                // Swap MainPage on Main UI Thread to StartupSplashPage
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    MainPage = new Views.StartupSplashPage();
-                });
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"App boot sequence error: {ex.Message}");
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    MainPage = new Views.StartupSplashPage();
-                });
-            }
         }
     }
 }
