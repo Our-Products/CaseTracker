@@ -1,7 +1,9 @@
-using CaseTrackerApplication.Interfaces;
+using CaseTrackerApplication.Interfaces.Repositories;
+using CaseTrackerApplication.Interfaces.Services;
 using CaseTrackerInfrastructure.Data;
 using CaseTrackerInfrastructure.Repositories;
 using CaseTrackerInfrastructure.Services;
+using CaseTrackerInfrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseTracker.Extensions
@@ -9,22 +11,31 @@ namespace CaseTracker.Extensions
     public static class InfrastructureServiceExtensions
     {
         /// <summary>
-        /// Registers all infrastructure layer services including DbContext and repositories.
+        /// Registers all infrastructure layer services including
+        /// DbContext, repositories, UnitOfWork and infrastructure services.
         /// </summary>
         public static IServiceCollection AddInfrastructureServices(
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            var useVirtualDb = configuration.GetValue<bool>("UseVirtualDatabase");
-            var connectionString = configuration.GetConnectionString("DefaultConnection");
-            var virtualConnectionString = configuration.GetConnectionString("VirtualConnection") ?? "Data Source=casetracker_virtual_dev.db";
+            var connectionString =
+                configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException(
+                    "Database connection string 'DefaultConnection' is not configured.");
+
+            // ==============================
+            // DATABASE
+            // ==============================
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(connectionString);
             });
 
-            // Register repositories
+            // ==============================
+            // REPOSITORIES
+            // ==============================
+
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ILawFirmRepository, LawFirmRepository>();
             services.AddScoped<ILawyerRepository, LawyerRepository>();
@@ -32,8 +43,18 @@ namespace CaseTracker.Extensions
             services.AddScoped<IUserLawFirmRepository, UserLawFirmRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 
-            // Register infrastructure services
-            services.AddScoped<IAuthService, AuthService>();
+            // ==============================
+            // UNIT OF WORK
+            // ==============================
+
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // ==============================
+            // INFRASTRUCTURE SERVICES
+            // ==============================
+
+            services.AddScoped<IPasswordService, PasswordService>();
+            services.AddScoped<IJwtService, JwtService>();
 
             return services;
         }

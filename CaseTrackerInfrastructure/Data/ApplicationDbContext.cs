@@ -11,6 +11,10 @@ public class ApplicationDbContext : DbContext
     {
     }
 
+    // ============================================================
+    // DB SETS
+    // ============================================================
+
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<UserRole> UserRoles { get; set; } = null!;
@@ -29,51 +33,69 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("users");
 
+            // Primary Key
             entity.HasKey(e => e.UserId);
 
             entity.Property(e => e.UserId)
                 .HasColumnName("user_id");
 
+
+            // Mobile Number
             entity.Property(e => e.MobileNumber)
                 .HasColumnName("mobile_number")
                 .HasMaxLength(20)
                 .IsRequired();
 
+
+            // Email
             entity.Property(e => e.Email)
                 .HasColumnName("email")
                 .HasMaxLength(255)
                 .IsRequired();
 
+
+            // Password
             entity.Property(e => e.Password)
                 .HasColumnName("password")
                 .HasColumnType("text")
                 .IsRequired();
 
+
+            // Status
             entity.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasMaxLength(20)
                 .IsRequired()
                 .HasDefaultValue("Active");
 
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            // Nullable UUID audit fields
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
 
-            // Indexes
+            // ========================================================
+            // INDEXES
+            // ========================================================
 
             entity.HasIndex(e => e.MobileNumber)
                 .IsUnique()
@@ -87,16 +109,18 @@ public class ApplicationDbContext : DbContext
                 .HasDatabaseName("ix_users_status");
 
 
-            // CreatedBy → User
+            // ========================================================
+            // AUDIT RELATIONSHIPS
+            // ========================================================
 
+            // CreatedBy → Users.UserId
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            // UpdatedBy → User
-
+            // UpdatedBy → Users.UserId
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
@@ -112,6 +136,7 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("roles");
 
+            // Primary Key
             entity.HasKey(e => e.RoleId);
 
             entity.Property(e => e.RoleId)
@@ -119,58 +144,76 @@ public class ApplicationDbContext : DbContext
                 .HasMaxLength(20)
                 .IsRequired();
 
+
+            // Role Name
             entity.Property(e => e.RoleName)
                 .HasColumnName("role_name")
                 .HasMaxLength(50)
                 .IsRequired();
 
+
+            // Status
             entity.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasMaxLength(20)
                 .IsRequired()
                 .HasDefaultValue("Active");
 
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
 
-            // Index
+            // ========================================================
+            // INDEXES
+            // ========================================================
 
             entity.HasIndex(e => e.RoleName)
                 .IsUnique()
                 .HasDatabaseName("ux_roles_role_name");
 
 
-            // CreatedBy → User
+            // ========================================================
+            // AUDIT RELATIONSHIPS
+            // ========================================================
 
+            // CreatedBy → Users.UserId
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            // UpdatedBy → User
-
+            // UpdatedBy → Users.UserId
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            // Seed Roles
+            // ========================================================
+            // SEED DATA
+            // ========================================================
 
             entity.HasData(
                 new Role
@@ -181,8 +224,11 @@ public class ApplicationDbContext : DbContext
                     CreatedAt = new DateTimeOffset(
                         2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
                     UpdatedAt = new DateTimeOffset(
-                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                    CreatedBy = null,
+                    UpdatedBy = null
                 },
+
                 new Role
                 {
                     RoleId = "R002",
@@ -191,8 +237,11 @@ public class ApplicationDbContext : DbContext
                     CreatedAt = new DateTimeOffset(
                         2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
                     UpdatedAt = new DateTimeOffset(
-                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                    CreatedBy = null,
+                    UpdatedBy = null
                 },
+
                 new Role
                 {
                     RoleId = "R003",
@@ -201,7 +250,9 @@ public class ApplicationDbContext : DbContext
                     CreatedAt = new DateTimeOffset(
                         2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
                     UpdatedAt = new DateTimeOffset(
-                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero)
+                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                    CreatedBy = null,
+                    UpdatedBy = null
                 }
             );
         });
@@ -223,34 +274,48 @@ public class ApplicationDbContext : DbContext
             });
 
 
+            // User ID
             entity.Property(e => e.UserId)
                 .HasColumnName("user_id")
                 .IsRequired();
 
+
+            // Role ID
             entity.Property(e => e.RoleId)
                 .HasColumnName("role_id")
                 .HasMaxLength(20)
                 .IsRequired();
 
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
+
+            // ========================================================
+            // RELATIONSHIPS
+            // ========================================================
 
             // UserId → Users.UserId
-
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
@@ -258,15 +323,16 @@ public class ApplicationDbContext : DbContext
 
 
             // RoleId → Roles.RoleId
-
+            //
+            // Restrict prevents accidental deletion of a role
+            // that is already assigned to users.
             entity.HasOne(e => e.Role)
                 .WithMany()
                 .HasForeignKey(e => e.RoleId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
 
             // CreatedBy → Users.UserId
-
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
@@ -274,7 +340,6 @@ public class ApplicationDbContext : DbContext
 
 
             // UpdatedBy → Users.UserId
-
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
@@ -290,21 +355,30 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("law_firms");
 
+            // Primary Key
             entity.HasKey(e => e.LawFirmId);
 
+
+            // Law Firm ID
             entity.Property(e => e.LawFirmId)
                 .HasColumnName("law_firm_id");
 
+
+            // Firm Name
             entity.Property(e => e.FirmName)
                 .HasColumnName("firm_name")
                 .HasMaxLength(255)
                 .IsRequired();
 
+
+            // Registration Number
             entity.Property(e => e.RegistrationNumber)
                 .HasColumnName("registration_number")
                 .HasMaxLength(255)
                 .IsRequired();
 
+
+            // Address
             entity.Property(e => e.AddressLine1)
                 .HasColumnName("address_line1")
                 .HasMaxLength(255);
@@ -313,6 +387,8 @@ public class ApplicationDbContext : DbContext
                 .HasColumnName("address_line2")
                 .HasMaxLength(255);
 
+
+            // Location
             entity.Property(e => e.City)
                 .HasColumnName("city")
                 .HasMaxLength(100);
@@ -325,43 +401,64 @@ public class ApplicationDbContext : DbContext
                 .HasColumnName("state")
                 .HasMaxLength(100);
 
+
+            // Pincode
             entity.Property(e => e.Pincode)
                 .HasColumnName("pincode");
 
+
+            entity.Property(e => e.Status)
+               .HasColumnName("status")
+               .HasMaxLength(20)
+               .IsRequired()
+               .HasDefaultValue("Active");
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
 
-            // Index
+            // ========================================================
+            // INDEXES
+            // ========================================================
 
             entity.HasIndex(e => e.RegistrationNumber)
                 .IsUnique()
-                .HasDatabaseName("ux_law_firms_registration_number");
+                .HasDatabaseName(
+                    "ux_law_firms_registration_number");
 
 
-            // CreatedBy → User
+            // ========================================================
+            // AUDIT RELATIONSHIPS
+            // ========================================================
 
+            // CreatedBy → Users.UserId
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
-            // UpdatedBy → User
-
+            // UpdatedBy → Users.UserId
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
@@ -377,73 +474,108 @@ public class ApplicationDbContext : DbContext
         {
             entity.ToTable("lawyers");
 
+            // Primary Key
             entity.HasKey(e => e.LawyerId);
 
+
+            // Lawyer ID
             entity.Property(e => e.LawyerId)
                 .HasColumnName("lawyer_id");
 
+
+            // User ID
             entity.Property(e => e.UserId)
                 .HasColumnName("user_id")
                 .IsRequired();
 
-            entity.Property(e => e.LawFirmId)
-                .HasColumnName("law_firm_id");
 
+            // Law Firm ID
+            entity.Property(e => e.LawFirmId)
+                .HasColumnName("law_firm_id")
+                .IsRequired(false);
+
+
+            // Full Name
             entity.Property(e => e.FullName)
                 .HasColumnName("full_name")
                 .HasMaxLength(200)
                 .IsRequired();
 
+
+            // Bar Council ID
             entity.Property(e => e.BarCouncilId)
                 .HasColumnName("bar_council_id")
                 .HasMaxLength(100);
 
+
+            // Bar Council Name
             entity.Property(e => e.BarCouncilName)
                 .HasColumnName("bar_council_name")
                 .HasMaxLength(200);
 
+
+            // Enrollment Date
             entity.Property(e => e.EnrollmentDate)
                 .HasColumnName("enrollment_date");
 
+
+            // Status
             entity.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasMaxLength(20)
                 .IsRequired()
                 .HasDefaultValue("Active");
 
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
-            // Nullable audit fields
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
 
-            // Indexes
+            // ========================================================
+            // INDEXES
+            // ========================================================
 
+            // One lawyer profile per user
             entity.HasIndex(e => e.UserId)
                 .IsUnique()
                 .HasDatabaseName("ix_lawyers_user_id");
 
+
             entity.HasIndex(e => e.BarCouncilId)
                 .HasDatabaseName("ix_lawyers_bar_council_id");
+
 
             entity.HasIndex(e => e.Status)
                 .HasDatabaseName("ix_lawyers_status");
 
 
-            // Lawyer → User
+            // ========================================================
+            // RELATIONSHIPS
+            // ========================================================
 
+            // Lawyer → User
+            //
+            // User deletion removes the dependent lawyer profile.
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
@@ -451,7 +583,9 @@ public class ApplicationDbContext : DbContext
 
 
             // Lawyer → LawFirm
-
+            //
+            // Deleting a law firm does not delete the lawyer.
+            // The lawyer simply becomes unassigned.
             entity.HasOne(e => e.LawFirm)
                 .WithMany()
                 .HasForeignKey(e => e.LawFirmId)
@@ -459,7 +593,6 @@ public class ApplicationDbContext : DbContext
 
 
             // CreatedBy → User
-
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
@@ -467,7 +600,6 @@ public class ApplicationDbContext : DbContext
 
 
             // UpdatedBy → User
-
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
@@ -491,44 +623,62 @@ public class ApplicationDbContext : DbContext
             });
 
 
+            // User ID
             entity.Property(e => e.UserId)
                 .HasColumnName("user_id")
                 .IsRequired();
 
+
+            // Law Firm ID
             entity.Property(e => e.LawFirmId)
                 .HasColumnName("law_firm_id")
                 .IsRequired();
 
+
+            // Joined At
             entity.Property(e => e.JoinedAt)
                 .HasColumnName("joined_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Status
             entity.Property(e => e.Status)
                 .HasColumnName("status")
                 .HasMaxLength(20)
                 .IsRequired()
                 .HasDefaultValue("Active");
 
+
+            // Created At
             entity.Property(e => e.CreatedAt)
                 .HasColumnName("created_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Updated At
             entity.Property(e => e.UpdatedAt)
                 .HasColumnName("updated_at")
                 .HasColumnType("timestamptz")
                 .IsRequired();
 
+
+            // Audit Fields
             entity.Property(e => e.CreatedBy)
-                .HasColumnName("created_by");
+                .HasColumnName("created_by")
+                .IsRequired(false);
 
             entity.Property(e => e.UpdatedBy)
-                .HasColumnName("updated_by");
+                .HasColumnName("updated_by")
+                .IsRequired(false);
 
+
+            // ========================================================
+            // RELATIONSHIPS
+            // ========================================================
 
             // UserId → Users.UserId
-
             entity.HasOne(e => e.User)
                 .WithMany()
                 .HasForeignKey(e => e.UserId)
@@ -536,7 +686,6 @@ public class ApplicationDbContext : DbContext
 
 
             // LawFirmId → LawFirms.LawFirmId
-
             entity.HasOne(e => e.LawFirm)
                 .WithMany()
                 .HasForeignKey(e => e.LawFirmId)
@@ -544,7 +693,6 @@ public class ApplicationDbContext : DbContext
 
 
             // CreatedBy → Users.UserId
-
             entity.HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedBy)
@@ -552,13 +700,16 @@ public class ApplicationDbContext : DbContext
 
 
             // UpdatedBy → Users.UserId
-
             entity.HasOne(e => e.UpdatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.UpdatedBy)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+
+        // ============================================================
+        // APPLY BASE CONFIGURATION
+        // ============================================================
 
         base.OnModelCreating(modelBuilder);
     }

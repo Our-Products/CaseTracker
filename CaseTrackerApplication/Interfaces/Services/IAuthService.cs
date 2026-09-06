@@ -1,6 +1,6 @@
 using CaseTrackerApplication.DTOs;
 
-namespace CaseTrackerApplication.Interfaces
+namespace CaseTrackerApplication.Interfaces.Services
 {
     public interface IAuthService
     {
