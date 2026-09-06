@@ -41,7 +41,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Initialize virtual database schema and seed roles
-await CaseTrackerInfrastructure.Data.DbInitializer.InitializeDatabaseAsync(app.Services);
-
 app.Run();

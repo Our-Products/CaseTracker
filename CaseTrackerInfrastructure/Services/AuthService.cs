@@ -26,260 +26,209 @@ namespace CaseTrackerInfrastructure.Services
 
         public async Task<AuthResult> RegisterAsync(RegisterRequest request)
         {
-            // =========================================================
-            // 1. Validate User Uniqueness
-            // =========================================================
+            // 1. Validate request
+            ValidateRegisterRequest(request);
 
-            if (await _userRepository.MobileNumberExistsAsync(request.MobileNumber))
+            // 2. Check mobile
+            var existingUser = await _userRepository
+                .GetByMobileNumberAsync(request.MobileNumber);
+
+            if (existingUser != null)
                 throw new InvalidOperationException(
-                    "Mobile number already registered");
+                    "An account with this mobile number already exists.");
 
+            // 3. Check email
+            var existingEmail = await _db.Users
+                .AnyAsync(u => u.Email == request.Email);
 
-            // =========================================================
-            // 2. Create User
-            // =========================================================
+            if (existingEmail)
+                throw new InvalidOperationException(
+                    "An account with this email already exists.");
 
-            var now = DateTimeOffset.UtcNow;
-
-            var user = new User
-            {
-                UserId = Guid.NewGuid(),
-
-                MobileNumber = request.MobileNumber.Trim(),
-
-                Email = request.Email?.Trim() ?? string.Empty,
-
-                Password = BCrypt.Net.BCrypt.HashPassword(
-                    request.Password),
-
-                Status = "active",
-
-                CreatedAt = now,
-                UpdatedAt = now
-            };
-
-
-            // =========================================================
-            // 3. Start Transaction
-            // =========================================================
-
-            await using var tx =
+            // 4. Start transaction
+            await using var transaction =
                 await _db.Database.BeginTransactionAsync();
 
             try
             {
-                _db.Users.Add(user);
+                // 5. Create User
+                var user = RegisterUser(request);
 
-                Guid? lawFirmId = null;
+                await _db.Users.AddAsync(user);
 
-
-                // =====================================================
-                // 4. Organization Registration
-                // =====================================================
-
-                if (request.RegisterType ==
-                        CaseTrackerApplication.DTOs.RegisterType.Organization)
+                // 6. Determine Role
+                var roleName = request.RegisterType switch
                 {
-                    if (request.LawFirm == null)
-                    {
-                        throw new InvalidOperationException(
-                            "Law firm information is required.");
-                    }
-
-
-                    // -------------------------------------------------
-                    // Find existing law firm
-                    // -------------------------------------------------
-
-                    LawFirm? lawFirm = null;
-
-                    if (!string.IsNullOrWhiteSpace(
-                            request.LawFirm.RegistrationNumber))
-                    {
-                        lawFirm = await _db.LawFirms
-                            .FirstOrDefaultAsync(x =>
-                                x.RegistrationNumber ==
-                                request.LawFirm.RegistrationNumber);
-                    }
-
-
-                    // -------------------------------------------------
-                    // If not found, search by firm name
-                    // -------------------------------------------------
-
-                    if (lawFirm == null &&
-                        !string.IsNullOrWhiteSpace(
-                            request.LawFirm.FirmName))
-                    {
-                        var firmName =
-                            request.LawFirm.FirmName.Trim();
-
-                        lawFirm = await _db.LawFirms
-                            .FirstOrDefaultAsync(x =>
-                                x.FirmName.ToLower() ==
-                                firmName.ToLower());
-                    }
-
-
-                    // -------------------------------------------------
-                    // Create new Law Firm if required
-                    // -------------------------------------------------
-
-                    if (lawFirm == null)
-                    {
-                        lawFirm = new LawFirm
-                        {
-                            LawFirmId = Guid.NewGuid(),
-
-                            FirmName =
-                                request.LawFirm.FirmName.Trim(),
-
-                            RegistrationNumber = string.IsNullOrWhiteSpace(request.LawFirm.RegistrationNumber)
-                                ? string.Empty
-                                : request.LawFirm.RegistrationNumber.Trim(),
-
-                            // Map optional address JSON if provided
-                            AddressLine1 = string.IsNullOrWhiteSpace(request.LawFirm.AddressJson)
-                                ? null
-                                : request.LawFirm.AddressJson.Trim(),
-
-                            CreatedAt = now,
-                            UpdatedAt = now
-                        };
-
-                        _db.LawFirms.Add(lawFirm);
-
-                        // ID is already generated using Guid.NewGuid()
-                        lawFirmId = lawFirm.LawFirmId;
-                    }
-                    else
-                    {
-                        lawFirmId = lawFirm.LawFirmId;
-                    }
-
-
-                    // =================================================
-                    // 5. User -> Law Firm Membership
-                    // =================================================
-
-                    var membership = new UserLawFirm
-                    {
-                        UserId = user.UserId,
-
-                        LawFirmId = lawFirm.LawFirmId,
-
-                        JoinedAt = now,
-
-                        Status = "Active",
-
-                        CreatedAt = now,
-                        UpdatedAt = now
-                    };
-
-                    _db.UserLawFirms.Add(membership);
-                }
-
-
-                // =====================================================
-                // 6. Create Lawyer Profile
-                // =====================================================
-
-                var lawyer = new Lawyer
-                {
-                    LawyerId = Guid.NewGuid(),
-
-                    UserId = user.UserId,
-
-                    // Individual -> null
-                    // Organization -> law firm ID
-                    LawFirmId = lawFirmId,
-
-                    // IMPORTANT:
-                    // Always the PERSON's name.
-                    FullName = request.FullName.Trim(),
-
-                    Status = "Active",
-
-                    CreatedAt = now,
-                    UpdatedAt = now
+                    RegisterType.Individual => "Lawyer",
+                    RegisterType.Organization => "Admin",
+                    _ => throw new InvalidOperationException(
+                        "Invalid register type.")
                 };
 
-                _db.Lawyers.Add(lawyer);
+                // 7. Create UserRole
+                var userRole = await RegisterUserRoleAsync(user, roleName);
 
+                await _db.UserRoles.AddAsync(userRole);
 
-                // =====================================================
-                // 7. Assign Lawyer Role
-                // =====================================================
-
-                var lawyerRole = await _db.Roles
-                    .FirstOrDefaultAsync(x =>
-                        x.RoleId == "R001");
-
-                if (lawyerRole == null)
+                // 8. Individual registration
+                if (request.RegisterType == RegisterType.Individual)
                 {
-                    throw new InvalidOperationException(
-                        "Lawyer role (R001) was not found.");
+                    var lawyer = RegisterLawyer(request, user);
+
+                    await _db.Lawyers.AddAsync(lawyer);
                 }
 
-
-                var userRole = new UserRole
+                // 9. Organization registration
+                if (request.RegisterType == RegisterType.Organization)
                 {
-                    UserId = user.UserId,
+                    var lawFirm = RegisterLawFirm(request, user);
 
-                    RoleId = lawyerRole.RoleId,
+                    var userLawFirm =
+                        RegisterUserLawFirm(lawFirm, user);
 
-                    CreatedAt = now,
-                    UpdatedAt = now
-                };
+                    await _db.LawFirms.AddAsync(lawFirm);
+                    await _db.UserLawFirms.AddAsync(userLawFirm);
+                }
 
-                _db.UserRoles.Add(userRole);
-
-                // Ensure audit fields are set for UserRole
-                userRole.CreatedBy = user.UserId.ToString();
-                userRole.UpdatedBy = user.UserId.ToString();
-
-
-                // =====================================================
-                // 8. Save Everything
-                // =====================================================
-
+                // 10. Save EVERYTHING
                 await _db.SaveChangesAsync();
 
+                // 11. Commit
+                await transaction.CommitAsync();
 
-                // =====================================================
-                // 9. Commit Transaction
-                // =====================================================
-
-                await tx.CommitAsync();
-
-
-                // =====================================================
-                // 10. Create JWT
-                // =====================================================
-
+                // 12. Generate JWT
                 var token = await CreateTokenAsync(user);
-
 
                 return new AuthResult
                 {
                     Token = token,
-
-                    ExpiresAt =
-                        DateTime.UtcNow.AddMinutes(
-                            GetExpiryMinutes()),
-
-                    UserId = user.UserId,
-
-                    LawFirmId = lawFirmId
+                    ExpiresAt = DateTime.UtcNow.AddMinutes(
+                        GetExpiryMinutes())
                 };
             }
             catch
             {
-                await tx.RollbackAsync();
+                await transaction.RollbackAsync();
                 throw;
             }
         }
+        private void ValidateRegisterRequest(RegisterRequest request)
+        {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
 
+            if (string.IsNullOrWhiteSpace(request.MobileNumber))
+                throw new InvalidOperationException("Mobile number is required.");
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new InvalidOperationException("Email is required.");
+
+            if (string.IsNullOrWhiteSpace(request.Password))
+                throw new InvalidOperationException("Password is required.");
+
+            if (request.RegisterType == RegisterType.Organization)
+            {
+                if (request.LawFirm == null)
+                    throw new InvalidOperationException(
+                        "Law firm details are required for organization registration.");
+
+                if (string.IsNullOrWhiteSpace(request.LawFirm.FirmName))
+                    throw new InvalidOperationException("Firm name is required.");
+
+                if (string.IsNullOrWhiteSpace(request.LawFirm.RegistrationNumber))
+                    throw new InvalidOperationException(
+                        "Registration number is required.");
+            }
+        }
+        private LawFirm RegisterLawFirm(RegisterRequest request, User user)
+        {
+            var lawfirm = new LawFirm()
+            {
+                LawFirmId = new Guid(),
+                FirmName = request.LawFirm.FirmName,
+                RegistrationNumber = request.LawFirm.RegistrationNumber,
+                AddressLine1 = request.LawFirm.AddressLine1,
+                AddressLine2 = request.LawFirm.AddressLine2,
+                City = request.LawFirm.City,
+                District = request.LawFirm.District,
+                State = request.LawFirm.State,
+                Pincode = request.LawFirm.Pincode,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = user.UserId,
+                UpdatedBy = user.UserId
+            };
+
+            return lawfirm;
+        }
+        private UserLawFirm RegisterUserLawFirm(LawFirm lawfirm, User user)
+        {
+            var userLawFirm = new UserLawFirm()
+            {
+                UserId = user.UserId,
+                LawFirmId = lawfirm.LawFirmId,
+                JoinedAt = DateTimeOffset.UtcNow,
+                Status = "Active",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+              
+            };
+            return userLawFirm;
+        }
+        private async Task<UserRole> RegisterUserRoleAsync(User user, string roleName)
+        {
+            var role = await _db.Roles
+                .FirstOrDefaultAsync(r => r.RoleName == roleName);
+
+            if (role == null)
+                throw new InvalidOperationException(
+                    $"Role '{roleName}' not found.");
+
+            return new UserRole
+            {
+                UserId = user.UserId,
+                RoleId = role.RoleId,
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = user.UserId,
+                UpdatedBy = user.UserId
+            };
+        }
+        public Lawyer RegisterLawyer(RegisterRequest request, User user)
+        {
+            var lawyers = new Lawyer
+            {
+                LawyerId = Guid.NewGuid(),
+                UserId = user.UserId,
+                FullName = request.FullName,
+                BarCouncilId = request.BarCouncilId,
+                BarCouncilName = request.BarCouncilName,
+                EnrollmentDate = request.EnrollmentDate,
+                Status = "Active",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+
+            return lawyers;
+        }
+        public User RegisterUser(RegisterRequest request)
+        {
+            Guid userid = Guid.NewGuid();
+            var newUser = new User
+            {
+                UserId = userid,
+                MobileNumber = request.MobileNumber,
+                Email = request.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Status = "Active",
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedBy = userid,
+                UpdatedBy = userid
+            };
+
+            return newUser;
+        }
         public async Task<AuthResult> LoginAsync(LoginRequest request)
         {
             var user = await _userRepository.GetByMobileNumberAsync(request.MobileNumber);
@@ -291,13 +240,11 @@ namespace CaseTrackerInfrastructure.Services
             var token = await CreateTokenAsync(user);
             return new AuthResult { Token = token, ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()) };
         }
-
         private int GetExpiryMinutes()
         {
             if (int.TryParse(_config["Jwt:ExpiryMinutes"], out var m)) return m;
             return 60;
         }
-
         private async Task<string> CreateTokenAsync(User user)
         {
             var key = _config["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");

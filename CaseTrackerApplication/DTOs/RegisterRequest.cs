@@ -31,16 +31,22 @@ namespace CaseTrackerApplication.DTOs
         [Required]
         public string MobileNumber { get; set; } = null!;
 
-        public string? Email { get; set; }
+        [Required]
+        public string Email { get; set; } = null!;
 
         [Required]
         public string Password { get; set; } = null!;
 
+
+        //Notes:  set  select box to ask 
+        // are you registered with bar council? if yes
+        // then show bar council id and name and enrollment date else hide it
         public string? BarCouncilId { get; set; }
 
         public string? BarCouncilName { get; set; }
 
         public DateTime? EnrollmentDate { get; set; }
+
 
         public RegisterType RegisterType { get; set; } = RegisterType.Individual;
 

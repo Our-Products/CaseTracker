@@ -12,7 +12,7 @@ namespace CaseTracker.Extensions
         /// Registers all infrastructure layer services including DbContext and repositories.
         /// </summary>
         public static IServiceCollection AddInfrastructureServices(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             IConfiguration configuration)
         {
             var useVirtualDb = configuration.GetValue<bool>("UseVirtualDatabase");
@@ -21,18 +21,16 @@ namespace CaseTracker.Extensions
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                if (useVirtualDb || string.IsNullOrWhiteSpace(connectionString))
-                {
-                    options.UseSqlite(virtualConnectionString);
-                }
-                else
-                {
-                    options.UseNpgsql(connectionString);
-                }
+                options.UseNpgsql(connectionString);
             });
 
             // Register repositories
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILawFirmRepository, LawFirmRepository>();
+            services.AddScoped<ILawyerRepository, LawyerRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserLawFirmRepository, UserLawFirmRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 
             // Register infrastructure services
             services.AddScoped<IAuthService, AuthService>();

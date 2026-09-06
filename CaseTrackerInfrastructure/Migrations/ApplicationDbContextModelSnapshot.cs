@@ -30,27 +30,36 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("law_firm_id");
 
                     b.Property<string>("AddressLine1")
-                        .HasColumnType("json")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("address_line1");
 
                     b.Property<string>("AddressLine2")
-                        .HasColumnType("json")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("address_line2");
 
                     b.Property<string>("City")
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("city");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
                     b.Property<string>("District")
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("district");
 
                     b.Property<string>("FirmName")
                         .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("firm_name");
 
@@ -60,25 +69,32 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.Property<string>("RegistrationNumber")
                         .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("registration_number");
 
                     b.Property<string>("State")
-                        .HasColumnType("character varying(255)")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("state");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
                     b.HasKey("LawFirmId");
 
-                    b.HasIndex("FirmName")
-                        .HasDatabaseName("ix_law_firms_firm_name");
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("RegistrationNumber")
                         .IsUnique()
                         .HasDatabaseName("ux_law_firms_registration_number");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("law_firms", (string)null);
                 });
@@ -91,16 +107,22 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("lawyer_id");
 
                     b.Property<string>("BarCouncilId")
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("bar_council_id");
 
                     b.Property<string>("BarCouncilName")
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("bar_council_name");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
 
                     b.Property<DateTime?>("EnrollmentDate")
                         .HasColumnType("timestamp with time zone")
@@ -108,7 +130,8 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
                         .HasColumnName("full_name");
 
                     b.Property<Guid?>("LawFirmId")
@@ -117,12 +140,19 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active")
                         .HasColumnName("status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid")
@@ -133,10 +163,14 @@ namespace CaseTrackerInfrastructure.Migrations
                     b.HasIndex("BarCouncilId")
                         .HasDatabaseName("ix_lawyers_bar_council_id");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("LawFirmId");
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_lawyers_status");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.HasIndex("UserId")
                         .IsUnique()
@@ -156,9 +190,9 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
@@ -168,19 +202,29 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active")
                         .HasColumnName("status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
+
                     b.HasKey("RoleId");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("RoleName")
                         .IsUnique()
-                        .HasDatabaseName("ix_roles_role_name");
+                        .HasDatabaseName("ux_roles_role_name");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("roles", (string)null);
 
@@ -189,7 +233,6 @@ namespace CaseTrackerInfrastructure.Migrations
                         {
                             RoleId = "R001",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Legal professional who manages cases and clients",
                             RoleName = "Lawyer",
                             Status = "Active",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -198,7 +241,6 @@ namespace CaseTrackerInfrastructure.Migrations
                         {
                             RoleId = "R002",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Staff member who assists lawyers",
                             RoleName = "Staff",
                             Status = "Active",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -207,7 +249,6 @@ namespace CaseTrackerInfrastructure.Migrations
                         {
                             RoleId = "R003",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Description = "Law-firm administrator",
                             RoleName = "Admin",
                             Status = "Active",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 9, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0))
@@ -222,21 +263,23 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("user_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("MobileNumber")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("mobile_number");
 
                     b.Property<string>("Password")
@@ -246,18 +289,23 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active")
                         .HasColumnName("status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
                     b.HasKey("UserId");
+
+                    b.HasIndex("CreatedBy");
 
                     b.HasIndex("Email")
                         .IsUnique()
@@ -269,6 +317,8 @@ namespace CaseTrackerInfrastructure.Migrations
 
                     b.HasIndex("Status")
                         .HasDatabaseName("ix_users_status");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("users", (string)null);
                 });
@@ -284,25 +334,40 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("law_firm_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("created_by");
+
                     b.Property<DateTimeOffset>("JoinedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("joined_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Active")
                         .HasColumnName("status");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("updated_by");
 
                     b.HasKey("UserId", "LawFirmId");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("LawFirmId");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("user_law_firms", (string)null);
                 });
@@ -314,6 +379,7 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnName("user_id");
 
                     b.Property<string>("RoleId")
+                        .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("role_id");
 
@@ -321,73 +387,162 @@ namespace CaseTrackerInfrastructure.Migrations
                         .HasColumnType("timestamptz")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamptz")
                         .HasColumnName("updated_at");
 
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("updated_by");
 
                     b.HasKey("UserId", "RoleId");
 
+                    b.HasIndex("CreatedBy");
+
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("user_role", (string)null);
                 });
 
+            modelBuilder.Entity("CaseTrackerDomain.Models.LawFirm", b =>
+                {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
             modelBuilder.Entity("CaseTrackerDomain.Models.Lawyer", b =>
                 {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CaseTrackerDomain.Models.LawFirm", "LawFirm")
                         .WithMany()
                         .HasForeignKey("LawFirmId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CaseTrackerDomain.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("LawFirm");
+
+                    b.Navigation("UpdatedByUser");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CaseTrackerDomain.Models.Role", b =>
+                {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("CaseTrackerDomain.Models.User", b =>
+                {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
             modelBuilder.Entity("CaseTrackerDomain.Models.UserLawFirm", b =>
                 {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CaseTrackerDomain.Models.LawFirm", "LawFirm")
                         .WithMany()
                         .HasForeignKey("LawFirmId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CaseTrackerDomain.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("LawFirm");
+
+                    b.Navigation("UpdatedByUser");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("CaseTrackerDomain.Models.UserRole", b =>
                 {
+                    b.HasOne("CaseTrackerDomain.Models.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("CaseTrackerDomain.Models.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("CaseTrackerDomain.Models.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("CaseTrackerDomain.Models.User", "User")
                         .WithMany()
@@ -395,7 +550,11 @@ namespace CaseTrackerInfrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("Role");
+
+                    b.Navigation("UpdatedByUser");
 
                     b.Navigation("User");
                 });
