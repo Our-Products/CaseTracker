@@ -21,7 +21,7 @@ namespace CaseTrackerDomain.Models
         public string? State { get; set; }
 
         public int? Pincode { get; set; }
-
+        public string Status { get; set; } = null!;
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; }

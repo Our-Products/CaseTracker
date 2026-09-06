@@ -20,7 +20,7 @@ namespace CaseTrackerMobile
 
             try
             {
-                SQLitePCL.Batteries_V2.Init();
+                //SQLitePCL.Batteries_V2.Init();
             }
             catch (Exception ex)
             {

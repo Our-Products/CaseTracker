@@ -9,6 +9,10 @@
   <ItemGroup>
     <Compile Remove="Migrations\20260906130752_UpdateAllEntities12.cs" />
     <Compile Remove="Migrations\20260906130752_UpdateAllEntities12.Designer.cs" />
+    <Compile Remove="Migrations\20260906141421_UpdateAllEntities.cs" />
+    <Compile Remove="Migrations\20260906141421_UpdateAllEntities.Designer.cs" />
+    <Compile Remove="Migrations\20260906180806_UpdateAllEntities1.cs" />
+    <Compile Remove="Migrations\20260906180806_UpdateAllEntities1.Designer.cs" />
   </ItemGroup>
 
   <!-- Migrations are included by default by the SDK; no explicit Include needed -->

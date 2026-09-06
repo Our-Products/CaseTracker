@@ -1,12 +1,11 @@
 using CaseTrackerDomain.Models;
 
-namespace CaseTrackerApplication.Interfaces
+namespace CaseTrackerApplication.Interfaces.Repositories
 {
     /// <summary>
     /// Repository interface for Role entity operations.
-    /// Defines all data access contracts for role management.
     /// </summary>
-    public interface IRoleRepository
+    public interface IRoleRepository : IRepository<Role>
     {
         /// <summary>
         /// Get Role by role name asynchronously.

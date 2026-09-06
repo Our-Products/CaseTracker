@@ -1,30 +1,45 @@
 using CaseTracker.Extensions;
-using CaseTrackerInfrastructure.Middleware;
+using CaseTracker.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ***** SERVICE REGISTRATION *****
-// Infrastructure: DbContext and repositories
-builder.Services.AddInfrastructureServices(builder.Configuration);
+// ==============================
+// SERVICE REGISTRATION
+// ==============================
 
-// Application: Services
+// Infrastructure
+builder.Services.AddInfrastructureServices(
+    builder.Configuration);
+
+// Application
 builder.Services.AddApplicationServices();
 
-// Authentication: JWT Bearer tokens
-builder.Services.AddJwtAuthentication(builder.Configuration);
+// Authentication
+builder.Services.AddJwtAuthentication(
+    builder.Configuration);
 
-// Authorization: Policies
+// Authorization
 builder.Services.AddCustomAuthorization();
 
-// ***** API & DOCUMENTATION *****
+// ==============================
+// API & DOCUMENTATION
+// ==============================
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ***** BUILD APP & CONFIGURE PIPELINE *****
+// ==============================
+// BUILD APPLICATION
+// ==============================
+
 var app = builder.Build();
 
-// Exception handling middleware (must be first)
+// ==============================
+// HTTP REQUEST PIPELINE
+// ==============================
+
+// Global exception handling
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -35,10 +50,13 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Authentication & Authorization middleware
+// Authentication
 app.UseAuthentication();
+
+// Authorization
 app.UseAuthorization();
 
+// Controllers
 app.MapControllers();
 
 app.Run();
