@@ -12,18 +12,25 @@ namespace CaseTracker.Extensions
         /// Registers all infrastructure layer services including DbContext and repositories.
         /// </summary>
         public static IServiceCollection AddInfrastructureServices(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             IConfiguration configuration)
         {
-            // Register DbContext with Scoped lifetime
-            // Scoped: New instance per HTTP request
+            var useVirtualDb = configuration.GetValue<bool>("UseVirtualDatabase");
             var connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            var virtualConnectionString = configuration.GetConnectionString("VirtualConnection") ?? "Data Source=casetracker_virtual_dev.db";
 
-            // Register repositories with Scoped lifetime
-            // Scoped: New instance per HTTP request
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseNpgsql(connectionString);
+            });
+
+            // Register repositories
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<ILawFirmRepository, LawFirmRepository>();
+            services.AddScoped<ILawyerRepository, LawyerRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserLawFirmRepository, UserLawFirmRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 
             // Register infrastructure services
             services.AddScoped<IAuthService, AuthService>();

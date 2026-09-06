@@ -18,14 +18,25 @@ namespace CaseTrackerDomain.Models
 
         public DateTime? EnrollmentDate { get; set; }
 
-        public string Status { get; set; } = "Active";
+        public string Status { get; set; } = null!;
 
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; }
 
-        // Navigation properties
+        public Guid? CreatedBy { get; set; }
+
+        public Guid? UpdatedBy { get; set; }
+
+
+        // Navigation Properties
+
         public User? User { get; set; }
+
         public LawFirm? LawFirm { get; set; }
+
+        public User? CreatedByUser { get; set; }
+
+        public User? UpdatedByUser { get; set; }
     }
 }

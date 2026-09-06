@@ -5,18 +5,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:CaseTrackerMobile"
     xmlns:views="clr-namespace:CaseTrackerMobile.Views"
-    Title="CaseTrackerMobile">
+    Title="CaseTracker"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="False">
 
+    <!-- Startup Splash Screen (Initial Shell Route) -->
+    <ShellContent
+        Title="Splash"
+        ContentTemplate="{DataTemplate views:StartupSplashPage}"
+        Route="StartupSplash" />
+
+    <!-- Login Page -->
     <ShellContent
         Title="Login"
         ContentTemplate="{DataTemplate views:LoginPage}"
         Route="Login" />
 
+    <!-- Register Page -->
     <ShellContent
         Title="Register"
         ContentTemplate="{DataTemplate views:RegisterPage}"
         Route="Register" />
 
+    <!-- Dashboard Page -->
+    <ShellContent
+        Title="Dashboard"
+        ContentTemplate="{DataTemplate views:DashboardPage}"
+        Route="Dashboard" />
+
+    <!-- Home Fallback -->
     <ShellContent
         Title="Home"
         ContentTemplate="{DataTemplate local:MainPage}"

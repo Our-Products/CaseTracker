@@ -4,17 +4,25 @@ namespace CaseTrackerDomain.Models
 {
     public class Role
     {
-        // Role id is a string (e.g. "R001") per requirements
-        public required string RoleId { get; set; }
+        public string RoleId { get; set; } = null!;
 
         public string RoleName { get; set; } = null!;
-
-        public string? Description { get; set; }
 
         public string Status { get; set; } = null!;
 
         public DateTimeOffset CreatedAt { get; set; }
 
         public DateTimeOffset UpdatedAt { get; set; }
+
+        public Guid? CreatedBy { get; set; }
+
+        public Guid? UpdatedBy { get; set; }
+
+
+        // Navigation Properties
+
+        public User? CreatedByUser { get; set; }
+
+        public User? UpdatedByUser { get; set; }
     }
 }

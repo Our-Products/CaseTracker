@@ -18,8 +18,13 @@ namespace CaseTrackerDomain.Models
 
         public DateTimeOffset UpdatedAt { get; set; }
 
-        public string? CreatedBy { get; set; }
+        public Guid? CreatedBy { get; set; }
 
-        public string? UpdatedBy { get; set; }
+        public Guid? UpdatedBy { get; set; }
+
+        // Navigation properties
+        public User? CreatedByUser { get; set; }
+
+        public User? UpdatedByUser { get; set; }
     }
 }

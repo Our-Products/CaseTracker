@@ -1,12 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CaseTrackerApplication.DTOs
 {
-    /// <summary>
-    /// Type of registration sent by the client. The mobile app may send the
-    /// enum value as an integer (0,1,...) which model binding supports by default.
-    /// </summary>
     public enum RegisterType
     {
         Individual = 0,
@@ -15,16 +12,17 @@ namespace CaseTrackerApplication.DTOs
 
     public class LawFirmDto
     {
+        [Required]
         public string FirmName { get; set; } = null!;
         public string? RegistrationNumber { get; set; }
-        // Stored as JSON or free-form string; change to a structured type if needed
-        public string? AddressJson { get; set; }
+        public string? AddressLine1 { get; set; }
+        public string? AddressLine2 { get; set; }
+        public string? City { get; set; }
+        public string? District { get; set; }
+        public string? State { get; set; }
+        public int? Pincode { get; set; }
     }
 
-    /// <summary>
-    /// Registration request coming from client apps.
-    /// If RegisterType == Associates, LawFirm must be provided.
-    /// </summary>
     public class RegisterRequest : IValidatableObject
     {
         [Required]
@@ -33,20 +31,30 @@ namespace CaseTrackerApplication.DTOs
         [Required]
         public string MobileNumber { get; set; } = null!;
 
-        public string? Email { get; set; }
+        [Required]
+        public string Email { get; set; } = null!;
 
         [Required]
         public string Password { get; set; } = null!;
 
+
+        //Notes:  set  select box to ask 
+        // are you registered with bar council? if yes
+        // then show bar council id and name and enrollment date else hide it
+        public string? BarCouncilId { get; set; }
+
+        public string? BarCouncilName { get; set; }
+
+        public DateTime? EnrollmentDate { get; set; }
+
+
         public RegisterType RegisterType { get; set; } = RegisterType.Individual;
 
-        /// <summary>
-        /// Optional: required when RegisterType == Associates.
-        /// </summary>
         public LawFirmDto? LawFirm { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+
             if (RegisterType == RegisterType.Organization)
             {
                 if (LawFirm == null)
@@ -63,7 +71,6 @@ namespace CaseTrackerApplication.DTOs
                 }
             }
 
-            // Additional validations (mobile format, password strength) can be added here.
             yield break;
         }
     }

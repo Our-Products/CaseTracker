@@ -5,16 +5,26 @@ namespace CaseTrackerDomain.Models
     public class UserRole
     {
         public Guid UserId { get; set; }
+
         public string RoleId { get; set; } = null!;
 
         public DateTimeOffset CreatedAt { get; set; }
+
         public DateTimeOffset UpdatedAt { get; set; }
 
-        public string CreatedBy { get; set; } = null!;
-        public string UpdatedBy { get; set; } = null!;
+        public Guid? CreatedBy { get; set; }
 
-        // Navigation properties (optional)
+        public Guid? UpdatedBy { get; set; }
+
+
+        // Navigation Properties
+
         public User? User { get; set; }
+
         public Role? Role { get; set; }
+
+        public User? CreatedByUser { get; set; }
+
+        public User? UpdatedByUser { get; set; }
     }
 }
