@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading.Tasks;
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 using Microsoft.Maui.Storage;
 
 namespace CaseTrackerMobile.Services
@@ -58,7 +58,7 @@ namespace CaseTrackerMobile.Services
                 var response = await _http.PostAsJsonAsync("api/auth/register", request);
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<CaseTrackerApplication.DTOs.AuthResult>();
+                    var result = await response.Content.ReadFromJsonAsync<AuthResult>();
                     if (result != null) return result;
                 }
             }

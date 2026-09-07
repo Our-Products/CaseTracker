@@ -1,4 +1,4 @@
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 
 namespace CaseTrackerApplication.Interfaces.Services
 {

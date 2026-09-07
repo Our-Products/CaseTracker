@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 using CaseTrackerMobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui.Controls;
+using System.ComponentModel.DataAnnotations;
 
 namespace CaseTrackerMobile.ViewModels
 {

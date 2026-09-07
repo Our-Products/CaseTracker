@@ -1,4 +1,4 @@
-﻿namespace CaseTrackerApplication.DTOs
+﻿namespace CaseTrackerApplication.DTOs.Common
 {
     public class ApiResponse<T>
     {

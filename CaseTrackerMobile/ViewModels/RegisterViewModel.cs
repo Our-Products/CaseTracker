@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 using CaseTrackerMobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -287,7 +287,7 @@ namespace CaseTrackerMobile.ViewModels
                     BarCouncilId = BarCouncilId.Trim(),
                     BarCouncilName = BarCouncilName.Trim(),
                     EnrollmentDate = EnrollmentDate,
-                    RegisterType = (CaseTrackerApplication.DTOs.RegisterType)SelectedRegisterTypeIndex
+                    RegisterType = (RegisterType)SelectedRegisterTypeIndex
                 };
 
                 if (IsAssociates)
