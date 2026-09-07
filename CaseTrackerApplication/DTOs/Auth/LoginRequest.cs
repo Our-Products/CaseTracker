@@ -1,4 +1,4 @@
-namespace CaseTrackerApplication.DTOs
+namespace CaseTrackerApplication.DTOs.Auth
 {
     public class LoginRequest
     {

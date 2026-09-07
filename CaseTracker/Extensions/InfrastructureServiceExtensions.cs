@@ -40,8 +40,12 @@ namespace CaseTracker.Extensions
             services.AddScoped<ILawFirmRepository, LawFirmRepository>();
             services.AddScoped<ILawyerRepository, LawyerRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IUserLawFirmRepository, UserLawFirmRepository>();
-            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            services.AddScoped<
+                IUserLawFirmRepository,
+                UserLawFirmRepository>();
+            services.AddScoped<
+                IUserRoleRepository,
+                UserRoleRepository>();
 
             // ==============================
             // UNIT OF WORK
