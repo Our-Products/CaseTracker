@@ -1,4 +1,4 @@
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

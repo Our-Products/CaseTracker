@@ -1,4 +1,4 @@
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Common;
 using CaseTrackerApplication.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

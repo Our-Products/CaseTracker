@@ -8,11 +8,35 @@ namespace CaseTracker.Extensions
         /// <summary>
         /// Registers all application layer services with their lifetimes.
         /// </summary>
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(
+            this IServiceCollection services)
         {
-            // Register application services with Scoped lifetime
-            // Scoped: New instance per HTTP request
+            // ==============================
+            // APPLICATION SERVICES
+            // ==============================
+
+            // Authentication
             services.AddScoped<IAuthService, AuthService>();
+
+            // User
+            services.AddScoped<IUserService, UserService>();
+
+            // Role
+            services.AddScoped<IRoleService, RoleService>();
+
+            // Lawyer
+            services.AddScoped<ILawyerService, LawyerService>();
+
+            // Law Firm
+            services.AddScoped<ILawFirmService, LawFirmService>();
+
+            // User - Role
+            services.AddScoped<IUserRoleService, UserRoleService>();
+
+            // User - Law Firm
+            services.AddScoped<
+                IUserLawFirmService,
+                UserLawFirmService>();
 
             return services;
         }

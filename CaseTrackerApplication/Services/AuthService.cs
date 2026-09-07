@@ -1,4 +1,4 @@
-using CaseTrackerApplication.DTOs;
+using CaseTrackerApplication.DTOs.Auth;
 using CaseTrackerApplication.Exceptions;
 using CaseTrackerApplication.Interfaces.Repositories;
 using CaseTrackerApplication.Interfaces.Services;
