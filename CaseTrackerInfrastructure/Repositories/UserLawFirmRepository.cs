@@ -8,9 +8,12 @@ namespace CaseTrackerInfrastructure.Repositories
     public class UserLawFirmRepository
         : Repository<UserLawFirm>, IUserLawFirmRepository
     {
+        private readonly ApplicationDbContext _context;
+
         public UserLawFirmRepository(ApplicationDbContext context)
             : base(context)
         {
+            _context = context;
         }
 
         public async Task<IEnumerable<UserLawFirm>> GetByUserIdAsync(
@@ -55,6 +58,9 @@ namespace CaseTrackerInfrastructure.Repositories
                     x.LawFirmId == lawFirmId);
         }
 
+        /// <summary>
+        /// Get all active UserLawFirm associations asynchronously.
+        /// </summary>
         public async Task<IEnumerable<UserLawFirm>> GetAllActiveAsync()
         {
             return await _dbSet

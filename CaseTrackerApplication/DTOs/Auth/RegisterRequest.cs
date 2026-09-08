@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace CaseTrackerApplication.DTOs.Auth
@@ -10,20 +12,14 @@ namespace CaseTrackerApplication.DTOs.Auth
 
     public class LawFirmDto
     {
-        public string? FirmName { get; set; }
-
+        [Required]
+        public string FirmName { get; set; } = null!;
         public string? RegistrationNumber { get; set; }
-
         public string? AddressLine1 { get; set; }
-
         public string? AddressLine2 { get; set; }
-
         public string? City { get; set; }
-
         public string? District { get; set; }
-
         public string? State { get; set; }
-
         public int? Pincode { get; set; }
     }
 
@@ -41,58 +37,41 @@ namespace CaseTrackerApplication.DTOs.Auth
         [Required]
         public string Password { get; set; } = null!;
 
-        // Bar Council details are optional.
-        // Required only when the user is registered with Bar Council.
+
+        //Notes:  set  select box to ask 
+        // are you registered with bar council? if yes
+        // then show bar council id and name and enrollment date else hide it
         public string? BarCouncilId { get; set; }
 
         public string? BarCouncilName { get; set; }
 
         public DateTime? EnrollmentDate { get; set; }
 
-        public RegisterType RegisterType { get; set; }
-            = RegisterType.Individual;
 
-        // Required only when RegisterType = Organization
+        public RegisterType RegisterType { get; set; } = RegisterType.Individual;
+
         public LawFirmDto? LawFirm { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(
-            ValidationContext validationContext)
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+
             if (RegisterType == RegisterType.Organization)
             {
                 if (LawFirm == null)
                 {
                     yield return new ValidationResult(
-                        "Law firm details are required for organization registration.",
-                        new[]
-                        {
-                            nameof(LawFirm)
-                        });
-
-                    yield break;
+                        "LawFirm information is required when registering as Organization.",
+                        new[] { nameof(LawFirm) });
                 }
-
-                if (string.IsNullOrWhiteSpace(LawFirm.FirmName))
+                else if (string.IsNullOrWhiteSpace(LawFirm.FirmName))
                 {
                     yield return new ValidationResult(
-                        "Firm name is required for organization registration.",
-                        new[]
-                        {
-                            nameof(LawFirm)
-                        });
-                }
-
-                if (string.IsNullOrWhiteSpace(
-                    LawFirm.RegistrationNumber))
-                {
-                    yield return new ValidationResult(
-                        "Registration number is required for organization registration.",
-                        new[]
-                        {
-                            nameof(LawFirm)
-                        });
+                        "LawFirm.FirmName is required.",
+                        new[] { nameof(LawFirm) + "." + nameof(LawFirmDto.FirmName) });
                 }
             }
+
+            yield break;
         }
     }
 }
