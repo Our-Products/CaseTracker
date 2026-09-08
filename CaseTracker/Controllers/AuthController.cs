@@ -1,4 +1,5 @@
 using CaseTrackerApplication.DTOs.Auth;
+using CaseTrackerApplication.DTOs.Common;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,37 +18,94 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Register a new lawyer
+        /// Register a new lawyer or organization.
         /// </summary>
-        /// <param name="request">Registration details</param>
-        /// <returns>Authentication token and expiry</returns>
+        /// <param name="request">
+        /// Registration details.
+        /// </param>
+        /// <returns>
+        /// Authentication token and user details.
+        /// </returns>
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<ActionResult<AuthResult>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<ApiResponse<AuthResult>>> Register(
+            [FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                return BadRequest(
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Validation failed.",
+                        Data = null,
+                        Errors = ModelState
+                            .ToDictionary(
+                                x => x.Key,
+                                x => x.Value?.Errors
+                                    .Select(e => e.ErrorMessage)
+                                    .ToArray()
+                            )
+                    });
+            }
 
-            var result = await _authService.RegisterAsync(request);
-            return Ok(result);
-            // Exceptions automatically handled by GlobalExceptionHandlerMiddleware
+            var result =
+                await _authService.RegisterAsync(request);
+
+            return Ok(
+                new ApiResponse<AuthResult>
+                {
+                    Success = true,
+                    Message = "Registration successful.",
+                    Data = result,
+                    Errors = null
+                });
         }
 
         /// <summary>
-        /// Login with mobile number and password
+        /// Login with mobile number and password.
         /// </summary>
-        /// <param name="request">Login credentials</param>
-        /// <returns>Authentication token and expiry</returns>
+        /// <param name="request">
+        /// Login credentials.
+        /// </param>
+        /// <returns>
+        /// Authentication token and user details.
+        /// </returns>
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResult>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<ApiResponse<AuthResult>>> Login(
+            [FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                return BadRequest(
+                    new ApiResponse<object>
+                    {
+                        Success = false,
+                        Message = "Validation failed.",
+                        Data = null,
+                        Errors = ModelState
+                            .ToDictionary(
+                                x => x.Key,
+                                x => x.Value?.Errors
+                                    .Select(e => e.ErrorMessage)
+                                    .ToArray()
+                            )
+                    });
+            }
 
-            var result = await _authService.LoginAsync(request);
-            return Ok(result);
-            // Exceptions automatically handled by GlobalExceptionHandlerMiddleware
+            var result =
+                await _authService.LoginAsync(request);
+
+            return Ok(
+                new ApiResponse<AuthResult>
+                {
+                    Success = true,
+                    Message = "Login successful.",
+                    Data = result,
+                    Errors = null
+                });
         }
     }
 }
+

@@ -48,7 +48,8 @@ namespace CaseTracker.Middleware
 
             var statusCode = StatusCodes.Status500InternalServerError;
             var message = "An unexpected error occurred.";
-            List<string>? errors = null;
+
+            Dictionary<string, string[]>? errors = null;
 
             switch (exception)
             {
@@ -137,9 +138,12 @@ namespace CaseTracker.Middleware
                     message =
                         "Invalid request.";
 
-                    errors = new List<string>
+                    errors = new Dictionary<string, string[]>
                     {
-                        argumentException.Message
+                        {
+                            "request",
+                            new[] { argumentException.Message }
+                        }
                     };
 
                     break;
