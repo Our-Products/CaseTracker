@@ -52,10 +52,12 @@ namespace CaseTrackerApplication.Services
         public async Task<AuthResult> RegisterAsync(
             RegisterRequest request)
         {
-            // 1. Validate request
             ValidateRegisterRequest(request);
 
-            // 2. Check mobile number
+            // -----------------------------------------------------
+            // Check existing mobile number
+            // -----------------------------------------------------
+
             var existingUser =
                 await _userRepository.GetByMobileNumberAsync(
                     request.MobileNumber);
@@ -66,7 +68,10 @@ namespace CaseTrackerApplication.Services
                     "An account with this mobile number already exists.");
             }
 
-            // 3. Check email
+            // -----------------------------------------------------
+            // Check existing email
+            // -----------------------------------------------------
+
             var emailExists =
                 await _userRepository.EmailExistsAsync(
                     request.Email);
@@ -77,17 +82,26 @@ namespace CaseTrackerApplication.Services
                     "An account with this email already exists.");
             }
 
-            // 4. Start transaction
+            // -----------------------------------------------------
+            // Begin transaction
+            // -----------------------------------------------------
+
             await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                // 5. Create User
+                // -------------------------------------------------
+                // 1. Create User
+                // -------------------------------------------------
+
                 var user = RegisterUser(request);
 
                 await _userRepository.AddAsync(user);
 
-                // 6. Determine Role
+                // -------------------------------------------------
+                // 2. Determine Role
+                // -------------------------------------------------
+
                 var roleName = request.RegisterType switch
                 {
                     RegisterType.Individual => "Lawyer",
@@ -98,9 +112,13 @@ namespace CaseTrackerApplication.Services
                         "Invalid register type.")
                 };
 
-                // 7. Get Role
+                // -------------------------------------------------
+                // 3. Get Role
+                // -------------------------------------------------
+
                 var role =
-                    await _roleRepository.GetByNameAsync(roleName);
+                    await _roleRepository.GetByNameAsync(
+                        roleName);
 
                 if (role == null)
                 {
@@ -114,41 +132,58 @@ namespace CaseTrackerApplication.Services
                         $"Role '{roleName}' is not active.");
                 }
 
-                // 8. Create UserRole
-                var userRole = RegisterUserRole(
-                    user,
-                    role);
+                // -------------------------------------------------
+                // 4. Create UserRole
+                // -------------------------------------------------
 
-                await _userRoleRepository.AddAsync(userRole);
+                var userRole =
+                    RegisterUserRole(
+                        user,
+                        role);
+
+                await _userRoleRepository.AddAsync(
+                    userRole);
 
                 Guid? lawFirmId = null;
 
-                // =====================================================
+                // =================================================
                 // INDIVIDUAL REGISTRATION
-                // =====================================================
+                // =================================================
 
                 if (request.RegisterType ==
                     RegisterType.Individual)
                 {
                     var lawyer =
-                        RegisterLawyer(request, user);
+                        RegisterIndividualLawyer(
+                            request,
+                            user);
 
-                    await _lawyerRepository.AddAsync(lawyer);
+                    await _lawyerRepository.AddAsync(
+                        lawyer);
                 }
 
-                // =====================================================
+                // =================================================
                 // ORGANIZATION REGISTRATION
-                // =====================================================
+                // =================================================
 
                 if (request.RegisterType ==
                     RegisterType.Organization)
                 {
-                    // Check whether the registration number
-                    // already exists.
+                    // ---------------------------------------------
+                    // LawFirm is guaranteed by validation
+                    // ---------------------------------------------
+
+                    var lawFirmRequest =
+                        request.LawFirm!;
+
+                    // ---------------------------------------------
+                    // Check duplicate registration number
+                    // ---------------------------------------------
+
                     var existingLawFirm =
                         await _lawFirmRepository
                             .GetByRegistrationNumberAsync(
-                                request.LawFirm!.RegistrationNumber);
+                                lawFirmRequest.RegistrationNumber!);
 
                     if (existingLawFirm != null)
                     {
@@ -156,16 +191,25 @@ namespace CaseTrackerApplication.Services
                             "A law firm with this registration number already exists.");
                     }
 
+                    // ---------------------------------------------
                     // Create LawFirm
-                    var lawFirm =
-                        RegisterLawFirm(request, user);
+                    // ---------------------------------------------
 
-                    lawFirmId = lawFirm.LawFirmId;
+                    var lawFirm =
+                        RegisterLawFirm(
+                            request,
+                            user);
+
+                    lawFirmId =
+                        lawFirm.LawFirmId;
 
                     await _lawFirmRepository.AddAsync(
                         lawFirm);
 
-                    // Create UserLawFirm
+                    // ---------------------------------------------
+                    // Create UserLawFirm membership
+                    // ---------------------------------------------
+
                     var userLawFirm =
                         RegisterUserLawFirm(
                             lawFirm,
@@ -173,21 +217,46 @@ namespace CaseTrackerApplication.Services
 
                     await _userLawFirmRepository.AddAsync(
                         userLawFirm);
+
+                    // ---------------------------------------------
+                    // Create Lawyer associated with LawFirm
+                    // ---------------------------------------------
+
+                    var lawyer =
+                        RegisterOrganizationalLawyer(
+                            request,
+                            user,
+                            lawFirm);
+
+                    await _lawyerRepository.AddAsync(
+                        lawyer);
                 }
 
-                // 9. Save everything
+                // -------------------------------------------------
+                // 5. Save all changes
+                // -------------------------------------------------
+
                 await _unitOfWork.SaveChangesAsync();
 
-                // 10. Commit transaction
+                // -------------------------------------------------
+                // 6. Commit transaction
+                // -------------------------------------------------
+
                 await _unitOfWork.CommitTransactionAsync();
 
-                // 11. Get roles for JWT
+                // -------------------------------------------------
+                // 7. Get roles for JWT
+                // -------------------------------------------------
+
                 var roles =
                     await _userRoleRepository
                         .GetRoleNamesByUserIdAsync(
                             user.UserId);
 
-                // 12. Generate JWT
+                // -------------------------------------------------
+                // 8. Generate JWT
+                // -------------------------------------------------
+
                 var token =
                     _jwtService.GenerateToken(
                         user,
@@ -201,14 +270,17 @@ namespace CaseTrackerApplication.Services
                         DateTime.UtcNow.AddMinutes(
                             _jwtService.GetExpiryMinutes()),
 
-                    UserId = user.UserId,
+                    UserId =
+                        user.UserId,
 
-                    LawFirmId = lawFirmId
+                    LawFirmId =
+                        lawFirmId
                 };
             }
             catch
             {
                 await _unitOfWork.RollbackTransactionAsync();
+
                 throw;
             }
         }
@@ -220,6 +292,10 @@ namespace CaseTrackerApplication.Services
         public async Task<AuthResult> LoginAsync(
             LoginRequest request)
         {
+            // -----------------------------------------------------
+            // Validate request
+            // -----------------------------------------------------
+
             if (request == null)
             {
                 throw new ArgumentNullException(
@@ -240,27 +316,36 @@ namespace CaseTrackerApplication.Services
                     "Password is required.");
             }
 
-            // 1. Find user
+            // -----------------------------------------------------
+            // Find user
+            // -----------------------------------------------------
+
             var user =
                 await _userRepository
                     .GetByMobileNumberAsync(
                         request.MobileNumber);
 
-            // Don't reveal whether mobile number exists.
+            // Do not reveal whether mobile number exists.
             if (user == null)
             {
                 throw new UnauthorizedException(
                     "Invalid credentials.");
             }
 
-            // 2. Check account status
+            // -----------------------------------------------------
+            // Check account status
+            // -----------------------------------------------------
+
             if (user.Status != "Active")
             {
                 throw new UnauthorizedException(
                     "Your account is inactive.");
             }
 
-            // 3. Verify password
+            // -----------------------------------------------------
+            // Verify password
+            // -----------------------------------------------------
+
             var passwordValid =
                 _passwordService.VerifyPassword(
                     request.Password,
@@ -272,33 +357,47 @@ namespace CaseTrackerApplication.Services
                     "Invalid credentials.");
             }
 
-            // 4. Get active roles
+            // -----------------------------------------------------
+            // Get user roles
+            // -----------------------------------------------------
+
             var roles =
                 await _userRoleRepository
                     .GetRoleNamesByUserIdAsync(
                         user.UserId);
 
-            // 5. Generate JWT
+            // -----------------------------------------------------
+            // Generate JWT
+            // -----------------------------------------------------
+
             var token =
                 _jwtService.GenerateToken(
                     user,
                     roles);
 
-            // 6. Return authentication result
+            // -----------------------------------------------------
+            // Get user's law firm
+            //
+            // Currently login does not return LawFirmId.
+            // If you want it, retrieve active membership here.
+            // -----------------------------------------------------
+
             return new AuthResult
             {
-                Token = token,
+                Token =
+                    token,
 
                 ExpiresAt =
                     DateTime.UtcNow.AddMinutes(
                         _jwtService.GetExpiryMinutes()),
 
-                UserId = user.UserId
+                UserId =
+                    user.UserId
             };
         }
 
         // =========================================================
-        // VALIDATION
+        // VALIDATE REGISTER REQUEST
         // =========================================================
 
         private void ValidateRegisterRequest(
@@ -308,6 +407,17 @@ namespace CaseTrackerApplication.Services
             {
                 throw new ArgumentNullException(
                     nameof(request));
+            }
+
+            // -----------------------------------------------------
+            // Basic user validation
+            // -----------------------------------------------------
+
+            if (string.IsNullOrWhiteSpace(
+                request.FullName))
+            {
+                throw new ValidationException(
+                    "Full name is required.");
             }
 
             if (string.IsNullOrWhiteSpace(
@@ -331,9 +441,26 @@ namespace CaseTrackerApplication.Services
                     "Password is required.");
             }
 
+            // -----------------------------------------------------
+            // Validate RegisterType
+            // -----------------------------------------------------
+
+            if (!Enum.IsDefined(
+                typeof(RegisterType),
+                request.RegisterType))
+            {
+                throw new ValidationException(
+                    "Invalid register type.");
+            }
+
+            // =====================================================
+            // ORGANIZATION VALIDATION
+            // =====================================================
+
             if (request.RegisterType ==
                 RegisterType.Organization)
             {
+                // LawFirm is required only for Organization.
                 if (request.LawFirm == null)
                 {
                     throw new ValidationException(
@@ -354,6 +481,18 @@ namespace CaseTrackerApplication.Services
                         "Registration number is required.");
                 }
             }
+
+            // =====================================================
+            // INDIVIDUAL VALIDATION
+            // =====================================================
+
+            // LawFirm is intentionally NOT validated here.
+            //
+            // For Individual:
+            //
+            // request.LawFirm == null
+            //
+            // is completely valid.
         }
 
         // =========================================================
@@ -363,13 +502,16 @@ namespace CaseTrackerApplication.Services
         private User RegisterUser(
             RegisterRequest request)
         {
-            var userId = Guid.NewGuid();
+            var userId =
+                Guid.NewGuid();
 
-            var now = DateTimeOffset.UtcNow;
+            var now =
+                DateTimeOffset.UtcNow;
 
             return new User
             {
-                UserId = userId,
+                UserId =
+                    userId,
 
                 MobileNumber =
                     request.MobileNumber,
@@ -381,15 +523,20 @@ namespace CaseTrackerApplication.Services
                     _passwordService.HashPassword(
                         request.Password),
 
-                Status = "Active",
+                Status =
+                    "Active",
 
-                CreatedAt = now,
+                CreatedAt =
+                    now,
 
-                UpdatedAt = now,
+                UpdatedAt =
+                    now,
 
-                CreatedBy = userId,
+                CreatedBy =
+                    userId,
 
-                UpdatedBy = userId
+                UpdatedBy =
+                    userId
             };
         }
 
@@ -401,39 +548,52 @@ namespace CaseTrackerApplication.Services
             User user,
             Role role)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now =
+                DateTimeOffset.UtcNow;
 
             return new UserRole
             {
-                UserId = user.UserId,
+                UserId =
+                    user.UserId,
 
-                RoleId = role.RoleId,
+                RoleId =
+                    role.RoleId,
 
-                CreatedAt = now,
+                CreatedAt =
+                    now,
 
-                UpdatedAt = now,
+                UpdatedAt =
+                    now,
 
-                CreatedBy = user.UserId,
+                CreatedBy =
+                    user.UserId,
 
-                UpdatedBy = user.UserId
+                UpdatedBy =
+                    user.UserId
             };
         }
 
         // =========================================================
-        // CREATE LAWYER
+        // CREATE INDIVIDUAL LAWYER
         // =========================================================
 
-        private Lawyer RegisterLawyer(
+        private Lawyer RegisterIndividualLawyer(
             RegisterRequest request,
             User user)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now =
+                DateTimeOffset.UtcNow;
 
             return new Lawyer
             {
-                LawyerId = Guid.NewGuid(),
+                LawyerId =
+                    Guid.NewGuid(),
 
-                UserId = user.UserId,
+                UserId =
+                    user.UserId,
+
+                LawFirmId =
+                    null,
 
                 FullName =
                     request.FullName,
@@ -447,15 +607,72 @@ namespace CaseTrackerApplication.Services
                 EnrollmentDate =
                     request.EnrollmentDate,
 
-                Status = "Active",
+                Status =
+                    "Active",
 
-                CreatedAt = now,
+                CreatedAt =
+                    now,
 
-                UpdatedAt = now,
+                UpdatedAt =
+                    now,
 
-                CreatedBy = user.UserId,
+                CreatedBy =
+                    user.UserId,
 
-                UpdatedBy = user.UserId
+                UpdatedBy =
+                    user.UserId
+            };
+        }
+
+        // =========================================================
+        // CREATE ORGANIZATIONAL LAWYER
+        // =========================================================
+
+        private Lawyer RegisterOrganizationalLawyer(
+            RegisterRequest request,
+            User user,
+            LawFirm lawFirm)
+        {
+            var now =
+                DateTimeOffset.UtcNow;
+
+            return new Lawyer
+            {
+                LawyerId =
+                    Guid.NewGuid(),
+
+                UserId =
+                    user.UserId,
+
+                LawFirmId =
+                    lawFirm.LawFirmId,
+
+                FullName =
+                    request.FullName,
+
+                BarCouncilId =
+                    request.BarCouncilId,
+
+                BarCouncilName =
+                    request.BarCouncilName,
+
+                EnrollmentDate =
+                    request.EnrollmentDate,
+
+                Status =
+                    "Active",
+
+                CreatedAt =
+                    now,
+
+                UpdatedAt =
+                    now,
+
+                CreatedBy =
+                    user.UserId,
+
+                UpdatedBy =
+                    user.UserId
             };
         }
 
@@ -467,43 +684,55 @@ namespace CaseTrackerApplication.Services
             RegisterRequest request,
             User user)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now =
+                DateTimeOffset.UtcNow;
+
+            var lawFirmRequest =
+                request.LawFirm!;
 
             return new LawFirm
             {
-                LawFirmId = Guid.NewGuid(),
+                LawFirmId =
+                    Guid.NewGuid(),
 
                 FirmName =
-                    request.LawFirm!.FirmName,
+                    lawFirmRequest.FirmName!,
 
                 RegistrationNumber =
-                    request.LawFirm.RegistrationNumber,
+                    lawFirmRequest.RegistrationNumber!,
 
                 AddressLine1 =
-                    request.LawFirm.AddressLine1,
+                    lawFirmRequest.AddressLine1,
 
                 AddressLine2 =
-                    request.LawFirm.AddressLine2,
+                    lawFirmRequest.AddressLine2,
 
                 City =
-                    request.LawFirm.City,
+                    lawFirmRequest.City,
 
                 District =
-                    request.LawFirm.District,
+                    lawFirmRequest.District,
 
                 State =
-                    request.LawFirm.State,
+                    lawFirmRequest.State,
 
                 Pincode =
-                    request.LawFirm.Pincode,
+                    lawFirmRequest.Pincode,
 
-                CreatedAt = now,
+                Status =
+                    "Active",
 
-                UpdatedAt = now,
+                CreatedAt =
+                    now,
 
-                CreatedBy = user.UserId,
+                UpdatedAt =
+                    now,
 
-                UpdatedBy = user.UserId
+                CreatedBy =
+                    user.UserId,
+
+                UpdatedBy =
+                    user.UserId
             };
         }
 
@@ -515,7 +744,8 @@ namespace CaseTrackerApplication.Services
             LawFirm lawFirm,
             User user)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now =
+                DateTimeOffset.UtcNow;
 
             return new UserLawFirm
             {
@@ -528,7 +758,8 @@ namespace CaseTrackerApplication.Services
                 JoinedAt =
                     now,
 
-                Status = "Active",
+                Status =
+                    "Active",
 
                 CreatedAt =
                     now,
@@ -545,3 +776,4 @@ namespace CaseTrackerApplication.Services
         }
     }
 }
+

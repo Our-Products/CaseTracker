@@ -1,19 +1,15 @@
 ﻿namespace CaseTrackerApplication.Exceptions
 {
-    public class ValidationException : AppException
+    public class ValidationException : Exception
     {
-        public List<string> Errors { get; }
+        public Dictionary<string, string[]>? Errors { get; }
 
-        public ValidationException(List<string> errors)
-            : base("One or more validation errors occurred.")
-        {
-            Errors = errors;
-        }
-
-        public ValidationException(string message)
+        public ValidationException(
+            string message,
+            Dictionary<string, string[]>? errors = null)
             : base(message)
         {
-            Errors = new List<string> { message };
+            Errors = errors;
         }
     }
 }
