@@ -105,7 +105,6 @@ namespace CaseTrackerApplication.Services
                 var roleName = request.RegisterType switch
                 {
                     RegisterType.Individual => "Lawyer",
-
                     RegisterType.Organization => "Admin",
 
                     _ => throw new ValidationException(
@@ -376,16 +375,12 @@ namespace CaseTrackerApplication.Services
                     roles);
 
             // -----------------------------------------------------
-            // Get user's law firm
-            //
-            // Currently login does not return LawFirmId.
-            // If you want it, retrieve active membership here.
+            // Return authentication result
             // -----------------------------------------------------
 
             return new AuthResult
             {
-                Token =
-                    token,
+                Token = token,
 
                 ExpiresAt =
                     DateTime.UtcNow.AddMinutes(
@@ -410,7 +405,7 @@ namespace CaseTrackerApplication.Services
             }
 
             // -----------------------------------------------------
-            // Basic user validation
+            // Basic validation
             // -----------------------------------------------------
 
             if (string.IsNullOrWhiteSpace(
@@ -461,6 +456,7 @@ namespace CaseTrackerApplication.Services
                 RegisterType.Organization)
             {
                 // LawFirm is required only for Organization.
+
                 if (request.LawFirm == null)
                 {
                     throw new ValidationException(
@@ -486,9 +482,9 @@ namespace CaseTrackerApplication.Services
             // INDIVIDUAL VALIDATION
             // =====================================================
 
-            // LawFirm is intentionally NOT validated here.
+            // LawFirm is intentionally not validated here.
             //
-            // For Individual:
+            // For Individual registration:
             //
             // request.LawFirm == null
             //
@@ -696,7 +692,7 @@ namespace CaseTrackerApplication.Services
                     Guid.NewGuid(),
 
                 FirmName =
-                    lawFirmRequest.FirmName!,
+                    lawFirmRequest.FirmName,
 
                 RegistrationNumber =
                     lawFirmRequest.RegistrationNumber!,
@@ -776,4 +772,3 @@ namespace CaseTrackerApplication.Services
         }
     }
 }
-
