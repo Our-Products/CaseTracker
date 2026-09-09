@@ -1,0 +1,596 @@
+{
+  "info": {
+    "_postman_id": "e8d7b3a1-12c4-4b5c-9c88-e9f012345678",
+    "name": "eCourtsIndia Partner REST API v4.0",
+    "description": "Complete Postman Collection covering all 22 endpoints of the eCourtsIndia Partner API, including Cases, Orders, Cause Lists, LegalCheck, Electoral Roll, and IndiaCode Statute API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://webapi.ecourtsindia.com",
+      "type": "string"
+    },
+    {
+      "key": "statuteBaseUrl",
+      "value": "https://indiacode.ecourtsindia.com/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "eci_live_your_actual_token_here",
+      "type": "string"
+    },
+    {
+      "key": "sampleCnr",
+      "value": "DLND020047882015",
+      "type": "string"
+    },
+    {
+      "key": "sampleOrderFilename",
+      "value": "order-1.pdf",
+      "type": "string"
+    },
+    {
+      "key": "sampleLegalCheckCode",
+      "value": "LC-A1B2C3D",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Cases & Search",
+      "item": [
+        {
+          "name": "Case Detail by CNR",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/{{sampleCnr}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "{{sampleCnr}}"]
+            },
+            "description": "Get complete case information by CNR (Case Number Record) including parties, advocates, hearing history, orders, and full markdown text."
+          }
+        },
+        {
+          "name": "Case Search (Faceted & Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/search?advocates=Sharma&courtCodes=DLHC01&caseStatuses=PENDING&pageSize=20&page=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "search"],
+              "query": [
+                { "key": "advocates", "value": "Sharma" },
+                { "key": "courtCodes", "value": "DLHC01" },
+                { "key": "caseStatuses", "value": "PENDING" },
+                { "key": "pageSize", "value": "20" },
+                { "key": "page", "value": "1" }
+              ]
+            },
+            "description": "Full-text and faceted search across 24Cr+ records. Pass arrays by repeating query keys. HC codes require bench suffix (e.g. DLHC01)."
+          }
+        },
+        {
+          "name": "Search Capabilities (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/search/capabilities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "search", "capabilities"]
+            },
+            "description": "Machine-readable catalog of sortable, facetable, and projectable fields for Case Search. Cost: 0 Credits."
+          }
+        },
+        {
+          "name": "Live Enum Reference (Free)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/enums?types=caseStatus,benchType,courtCode",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "enums"],
+              "query": [
+                { "key": "types", "value": "caseStatus,benchType,courtCode" }
+              ]
+            },
+            "description": "Get live enumeration codes. No authentication required. Cost: 0 Credits."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Orders & AI Analysis",
+      "item": [
+        {
+          "name": "Order Download (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/{{sampleCnr}}/order/{{sampleOrderFilename}}?signed=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "{{sampleCnr}}", "order", "{{sampleOrderFilename}}"],
+              "query": [
+                { "key": "signed", "value": "true", "description": "Set false for raw unsigned PDF without watermark" }
+              ]
+            },
+            "description": "Get order document download info. Pass bare filename from judgmentOrders[].orderUrl."
+          }
+        },
+        {
+          "name": "Order + AI Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/{{sampleCnr}}/order-ai/{{sampleOrderFilename}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "{{sampleCnr}}", "order-ai", "{{sampleOrderFilename}}"]
+            },
+            "description": "Get OCR extracted text and AI legal analysis (ratio decidendi, executive summary, statutes cited). Takes 10-60s on first run."
+          }
+        },
+        {
+          "name": "Order Markdown & PDF Base64",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/{{sampleCnr}}/order-md/{{sampleOrderFilename}}?signed=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "{{sampleCnr}}", "order-md", "{{sampleOrderFilename}}"],
+              "query": [
+                { "key": "signed", "value": "true" }
+              ]
+            },
+            "description": "Returns watermarked PDF Base64 and markdown text. Pipeline can take up to 300s."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Case Refreshes",
+      "item": [
+        {
+          "name": "Queue Case Refresh (Single)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/{{sampleCnr}}/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "{{sampleCnr}}", "refresh"]
+            },
+            "description": "Asynchronously queue fresh scrape from live court CIS servers. Idempotent within 15 seconds."
+          }
+        },
+        {
+          "name": "Queue Bulk Case Refresh (2-50 CNRs)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnrs\": [\n    \"DLHC010024442025\",\n    \"DLHC010351552024\",\n    \"HCBM050012342023\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/bulk-refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "bulk-refresh"]
+            },
+            "description": "Queue re-scrape for 2 to 50 CNRs in one call."
+          }
+        },
+        {
+          "name": "Bulk Refresh Status (Free)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnrs\": [\n    \"DLHC010024442025\",\n    \"DLHC010351552024\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/case/bulk-refresh-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "case", "bulk-refresh-status"]
+            },
+            "description": "Check status of previously queued refreshes. Free to call. Failed refreshes are automatically refunded."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Cause Lists & Court Structure",
+      "item": [
+        {
+          "name": "Court Structure - States (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/court-structure/states",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "court-structure", "states"]
+            },
+            "description": "Discover all states. Supreme Court is code 'SC', stateName 'India'. Free with partner token."
+          }
+        },
+        {
+          "name": "Court Structure - Districts in State (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/court-structure/states/DL/districts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "court-structure", "states", "DL", "districts"]
+            },
+            "description": "High Courts appear as special district code 'HC'. Free with partner token."
+          }
+        },
+        {
+          "name": "Court Structure - Complexes in District (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/court-structure/states/UP/districts/1/complexes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "court-structure", "states", "UP", "districts", "1", "complexes"]
+            },
+            "description": "List court complexes in a district. Free with partner token."
+          }
+        },
+        {
+          "name": "Court Structure - Courts in Complex (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/court-structure/states/UP/districts/1/complexes/1130029/courts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "court-structure", "states", "UP", "districts", "1", "complexes", "1130029", "courts"]
+            },
+            "description": "List individual court rooms in a court complex. Free with partner token."
+          }
+        },
+        {
+          "name": "Cause List Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/search?state=DL&date=2026-09-08&limit=20&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "search"],
+              "query": [
+                { "key": "state", "value": "DL" },
+                { "key": "date", "value": "2026-09-08" },
+                { "key": "limit", "value": "20" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "Search daily cause list schedules. Uses offset pagination (offset = previous_offset + limit)."
+          }
+        },
+        {
+          "name": "Cause List Search by Case Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/search?q=G.R.case%2F533%2F2023&state=JH&limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "search"],
+              "query": [
+                { "key": "q", "value": "G.R.case/533/2023" },
+                { "key": "state", "value": "JH" },
+                { "key": "limit", "value": "10" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "Direct case number lookup in cause lists. Remember to URL-encode slashes."
+          }
+        },
+        {
+          "name": "Batch CNR Cause List Check",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cnrs\": [\n    \"JHBO010001232024\",\n    \"DLND020047882015\",\n    \"MHAU030001112023\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/cnr/batch",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "cnr", "batch"]
+            },
+            "description": "Check upcoming listings for up to 100 CNRs in one call. Billed per unique valid CNR."
+          }
+        },
+        {
+          "name": "Cause List Available Dates (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/causelist/available-dates?state=DL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "causelist", "available-dates"],
+              "query": [
+                { "key": "state", "value": "DL" }
+              ]
+            },
+            "description": "Discovers dates with cause list data. Free with Bearer token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. LegalCheck (Background Litigation Screening)",
+      "item": [
+        {
+          "name": "Submit Legal Check - Individual",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "vendor-1042-attempt-1" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_type\": \"individual\",\n  \"subject\": {\n    \"name\": \"Amit Kumar\",\n    \"father_name\": \"Ramesh Kumar\",\n    \"aliases\": [\"Amit R Kumar\"],\n    \"date_of_birth\": \"1988-04-12\",\n    \"addresses\": [\"Patna, Bihar\"],\n    \"gender\": \"male\"\n  },\n  \"config\": {\n    \"model\": \"eCI-1.2\",\n    \"purpose\": \"vendor_onboarding\",\n    \"ticket_size\": 250000,\n    \"client_ref_no\": \"VENDOR-1042\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check"]
+            },
+            "description": "Submit an individual for async litigation background check. Billed ₹99 PAYG / ₹33 Subscription. Max 3 concurrent jobs."
+          }
+        },
+        {
+          "name": "Submit Legal Check - Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Idempotency-Key", "value": "corp-5501-attempt-1" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject_type\": \"company\",\n  \"subject\": {\n    \"company_name\": \"Example Private Limited\",\n    \"directors\": [\"Amit Kumar\"],\n    \"registered_addresses\": [\"New Delhi, Delhi\"],\n    \"cin\": \"U72200DL2020PTC123456\"\n  },\n  \"config\": {\n    \"model\": \"eCI-1.2\",\n    \"purpose\": \"counterparty_due_diligence\",\n    \"client_ref_no\": \"CORP-5501\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check"]
+            },
+            "description": "Submit a corporate entity for async litigation screening across NCLT, High Courts, and commercial courts."
+          }
+        },
+        {
+          "name": "Legal Check Status (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check/{{sampleLegalCheckCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check", "{{sampleLegalCheckCode}}"]
+            },
+            "description": "Poll progress of LegalCheck job. Free to call. Honor Retry-After: 5 header while status is queued or running."
+          }
+        },
+        {
+          "name": "Legal Check Report (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check/{{sampleLegalCheckCode}}/report?verbosity=standard&min_score=40",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check", "{{sampleLegalCheckCode}}", "report"],
+              "query": [
+                { "key": "verbosity", "value": "standard" },
+                { "key": "min_score", "value": "40" }
+              ]
+            },
+            "description": "Fetch final screening report once completed. Calling while still running returns 409 NOT_READY. Free to call."
+          }
+        },
+        {
+          "name": "List Partner Legal Checks (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check?status=completed&page=1&page_size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check"],
+              "query": [
+                { "key": "status", "value": "completed" },
+                { "key": "page", "value": "1" },
+                { "key": "page_size", "value": "20" }
+              ]
+            },
+            "description": "List previously submitted legal check jobs. Free to call."
+          }
+        },
+        {
+          "name": "Legal Check Models (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/legal-check/models",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "legal-check", "models"]
+            },
+            "description": "Lists valid models for config.model. Current default is eCI-1.2. Free to call."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Electoral Roll API",
+      "item": [
+        {
+          "name": "Electoral Roll Search",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/electoral/search?name=ramesh%20kumar&stateCode=S01&age=35&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "electoral", "search"],
+              "query": [
+                { "key": "name", "value": "ramesh kumar" },
+                { "key": "stateCode", "value": "S01" },
+                { "key": "age", "value": "35" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            },
+            "description": "Search electoral roll. Requires at least one primary criterion (name, epic, q, or household key). Max pageSize is 100."
+          }
+        },
+        {
+          "name": "Electoral EPIC Lookup",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/electoral/epic/ABC1234567",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "electoral", "epic", "ABC1234567"]
+            },
+            "description": "Exact voter ID lookup grouped across historical revisions."
+          }
+        },
+        {
+          "name": "Electoral Capabilities (Free)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/partner/electoral/capabilities",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "partner", "electoral", "capabilities"]
+            },
+            "description": "Machine-readable catalog of accepted electoral facets, filters, and match modes. Free to call."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. IndiaCode Statute API (Keyless & Free)",
+      "item": [
+        {
+          "name": "Statute Index Meta",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statuteBaseUrl}}/meta",
+              "host": ["{{statuteBaseUrl}}"],
+              "path": ["meta"]
+            },
+            "description": "Database build metadata and index statistics."
+          }
+        },
+        {
+          "name": "List Central & State Acts",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statuteBaseUrl}}/acts?limit=50&offset=0",
+              "host": ["{{statuteBaseUrl}}"],
+              "path": ["acts"],
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "offset", "value": "0" }
+              ]
+            },
+            "description": "List all Acts of Parliament and State assemblies."
+          }
+        },
+        {
+          "name": "Get Specific Act Details (BNS)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statuteBaseUrl}}/acts/bns",
+              "host": ["{{statuteBaseUrl}}"],
+              "path": ["acts", "bns"]
+            },
+            "description": "Retrieve details of Bharatiya Nyaya Sanhita (BNS)."
+          }
+        },
+        {
+          "name": "Get Section Text",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statuteBaseUrl}}/bns/section/103",
+              "host": ["{{statuteBaseUrl}}"],
+              "path": ["bns", "section", "103"]
+            },
+            "description": "Full text of BNS Section 103 (Punishment for murder)."
+          }
+        },
+        {
+          "name": "Criminal Law Provision Mappings (IPC -> BNS)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statuteBaseUrl}}/mappings?from_act=ipc&to_act=bns&from_section=302",
+              "host": ["{{statuteBaseUrl}}"],
+              "path": ["mappings"],
+              "query": [
+                { "key": "from_act", "value": "ipc" },
+                { "key": "to_act", "value": "bns" },
+                { "key": "from_section", "value": "302" }
+              ]
+            },
+            "description": "Maps old IPC / CrPC sections to new BNS / BNSS provisions with confidence scores."
+          }
+        }
+      ]
+    }
+  ]
+}
