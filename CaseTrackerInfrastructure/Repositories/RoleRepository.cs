@@ -7,12 +7,16 @@ namespace CaseTrackerInfrastructure.Repositories
 {
     /// <summary>
     /// Repository implementation for Role entity.
+    /// Encapsulates all database access logic for role management.
     /// </summary>
     public class RoleRepository : Repository<Role>, IRoleRepository
     {
+        private readonly ApplicationDbContext _context;
+
         public RoleRepository(ApplicationDbContext context)
             : base(context)
         {
+            _context = context;
         }
 
         /// <summary>

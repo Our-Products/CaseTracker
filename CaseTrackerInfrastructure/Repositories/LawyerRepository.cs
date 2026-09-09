@@ -7,12 +7,16 @@ namespace CaseTrackerInfrastructure.Repositories
 {
     /// <summary>
     /// Repository implementation for Lawyer entity.
+    /// Encapsulates all database access logic for lawyer management.
     /// </summary>
     public class LawyerRepository : Repository<Lawyer>, ILawyerRepository
     {
+        private readonly ApplicationDbContext _context;
+
         public LawyerRepository(ApplicationDbContext context)
             : base(context)
         {
+            _context = context;
         }
 
         /// <summary>
