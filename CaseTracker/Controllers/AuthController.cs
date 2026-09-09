@@ -1,4 +1,5 @@
 using CaseTrackerApplication.DTOs.Auth;
+using CaseTrackerApplication.DTOs.Common;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -43,7 +44,7 @@ namespace CaseTracker.Controllers
                                 x => x.Key,
                                 x => x.Value?.Errors
                                     .Select(e => e.ErrorMessage)
-                                    .ToArray()
+                                    .ToArray() ?? Array.Empty<string>()
                             )
                     });
             }
@@ -88,7 +89,7 @@ namespace CaseTracker.Controllers
                                 x => x.Key,
                                 x => x.Value?.Errors
                                     .Select(e => e.ErrorMessage)
-                                    .ToArray()
+                                    .ToArray() ?? Array.Empty<string>()
                             )
                     });
             }
