@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ==============================
 
 // Infrastructure
-builder.Services.AddInfrastructureServices(
+ builder.Services.AddInfrastructureServices(
     builder.Configuration);
 
 // Application
@@ -27,7 +27,7 @@ builder.Services.AddCustomAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerDocumentation();
 
 // ==============================
 // BUILD APPLICATION
