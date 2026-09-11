@@ -1,4 +1,6 @@
-﻿using CaseTrackerApplication.DTOs.UserLawFirms;
+using CaseTracker.Constants;
+using CaseTracker.Extensions;
+using CaseTrackerApplication.DTOs.UserLawFirms;
 using CaseTrackerApplication.Exceptions;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +21,7 @@ namespace CaseTracker.Controllers
             _userLawFirmService = userLawFirmService;
         }
 
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -28,6 +31,7 @@ namespace CaseTracker.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActive()
         {
@@ -41,6 +45,11 @@ namespace CaseTracker.Controllers
         public async Task<IActionResult> GetByUserId(
             Guid userId)
         {
+            if (!User.CanAccessUser(userId))
+            {
+                return Forbid();
+            }
+
             var result =
                 await _userLawFirmService
                     .GetByUserIdAsync(userId);
@@ -48,6 +57,7 @@ namespace CaseTracker.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = AppRoles.AdminOrLawyer)]
         [HttpGet("lawfirm/{lawFirmId:guid}")]
         public async Task<IActionResult> GetByLawFirmId(
             Guid lawFirmId)
@@ -65,6 +75,11 @@ namespace CaseTracker.Controllers
             Guid userId,
             Guid lawFirmId)
         {
+            if (!User.CanAccessUser(userId))
+            {
+                return Forbid();
+            }
+
             var result =
                 await _userLawFirmService
                     .GetByUserAndLawFirmAsync(
@@ -84,6 +99,11 @@ namespace CaseTracker.Controllers
             Guid userId,
             Guid lawFirmId)
         {
+            if (!User.CanAccessUser(userId))
+            {
+                return Forbid();
+            }
+
             var exists =
                 await _userLawFirmService
                     .IsUserInLawFirmAsync(
@@ -93,6 +113,7 @@ namespace CaseTracker.Controllers
             return Ok(new { exists });
         }
 
+        [Authorize(Roles = AppRoles.AdminOrLawyer)]
         [HttpPost]
         public async Task<IActionResult> AddUserToLawFirm(
             [FromBody] AddUserLawFirmRequest request)
@@ -104,6 +125,7 @@ namespace CaseTracker.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = AppRoles.AdminOrLawyer)]
         [HttpDelete(
             "user/{userId:guid}/lawfirm/{lawFirmId:guid}")]
         public async Task<IActionResult> RemoveUserFromLawFirm(

@@ -1,4 +1,5 @@
-﻿using CaseTrackerApplication.DTOs.Roles;
+using CaseTracker.Constants;
+using CaseTrackerApplication.DTOs.Roles;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,8 +19,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all roles.
+        /// Get all roles (Company SuperAdmin or Firm Admin).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdminOrAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -29,7 +31,7 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all active roles.
+        /// Get all active roles (Any authenticated user).
         /// </summary>
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActive()
@@ -40,8 +42,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get role by ID.
+        /// Get role by ID (Company SuperAdmin or Firm Admin).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdminOrAdmin)]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -51,8 +54,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get role by name.
+        /// Get role by name (Company SuperAdmin or Firm Admin).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdminOrAdmin)]
         [HttpGet("name/{roleName}")]
         public async Task<IActionResult> GetByName(string roleName)
         {
@@ -62,8 +66,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Create a new role.
+        /// Create a new role (Company SuperAdmin only).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateRoleRequest request)
@@ -77,8 +82,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Update an existing role.
+        /// Update an existing role (Company SuperAdmin only).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(
             string id,
@@ -90,8 +96,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Delete a role.
+        /// Delete a role (Company SuperAdmin only).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

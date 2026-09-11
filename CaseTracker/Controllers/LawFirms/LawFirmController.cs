@@ -1,4 +1,5 @@
-﻿using CaseTrackerApplication.Exceptions;
+using CaseTracker.Constants;
+using CaseTrackerApplication.Exceptions;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +20,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all law firms.
+        /// Get all law firms (Company SuperAdmin only).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -31,7 +33,7 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all active law firms.
+        /// Get all active law firms (Authenticated users).
         /// </summary>
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActive()
@@ -43,7 +45,7 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get law firm by ID.
+        /// Get law firm by ID (Authenticated users).
         /// </summary>
         [HttpGet("{lawFirmId:guid}")]
         public async Task<IActionResult> GetById(
@@ -61,8 +63,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get law firm by registration number.
+        /// Get law firm by registration number (Admin or Lawyer).
         /// </summary>
+        [Authorize(Roles = AppRoles.AdminOrLawyer)]
         [HttpGet("registration/{registrationNumber}")]
         public async Task<IActionResult>
             GetByRegistrationNumber(

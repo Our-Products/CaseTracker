@@ -3,6 +3,7 @@ using CaseTrackerApplication.DTOs.Common;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using CaseTracker.Extensions;
 
 namespace CaseTracker.Controllers
 {
@@ -105,6 +106,35 @@ namespace CaseTracker.Controllers
                     Data = result,
                     Errors = null
                 });
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult GetCurrentUser()
+        {
+            var userId = User.GetUserId();
+            if (!userId.HasValue)
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "User identity claim not found.",
+                    Data = null
+                });
+            }
+
+            var roles = User.GetRoles();
+
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Message = "User profile retrieved successfully.",
+                Data = new
+                {
+                    UserId = userId.Value,
+                    Roles = roles
+                }
+            });
         }
     }
 }

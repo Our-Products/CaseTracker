@@ -1,4 +1,6 @@
-﻿using CaseTrackerApplication.Exceptions;
+using CaseTracker.Constants;
+using CaseTracker.Extensions;
+using CaseTrackerApplication.Exceptions;
 using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,8 +21,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all lawyers.
+        /// Get all lawyers (Company SuperAdmin or Firm Admin).
         /// </summary>
+        [Authorize(Roles = AppRoles.SuperAdminOrAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -31,7 +34,7 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get all active lawyers.
+        /// Get all active lawyers (Authenticated users).
         /// </summary>
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActive()
@@ -43,7 +46,7 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get lawyer by ID.
+        /// Get lawyer by ID (Authenticated users).
         /// </summary>
         [HttpGet("{lawyerId:guid}")]
         public async Task<IActionResult> GetById(
@@ -61,12 +64,17 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get lawyer by User ID.
+        /// Get lawyer by User ID (Admin or Self).
         /// </summary>
         [HttpGet("user/{userId:guid}")]
         public async Task<IActionResult> GetByUserId(
             Guid userId)
         {
+            if (!User.CanAccessUser(userId))
+            {
+                return Forbid();
+            }
+
             var result =
                 await _lawyerService.GetByUserIdAsync(
                     userId);
@@ -79,8 +87,9 @@ namespace CaseTracker.Controllers
         }
 
         /// <summary>
-        /// Get lawyer by Bar Council ID.
+        /// Get lawyer by Bar Council ID (Admin or Lawyer).
         /// </summary>
+        [Authorize(Roles = AppRoles.AdminOrLawyer)]
         [HttpGet("bar-council/{barCouncilId}")]
         public async Task<IActionResult> GetByBarCouncilId(
             string barCouncilId)

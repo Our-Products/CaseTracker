@@ -1,4 +1,6 @@
-﻿using CaseTrackerApplication.Interfaces.Services;
+using CaseTracker.Constants;
+using CaseTracker.Extensions;
+using CaseTrackerApplication.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +19,7 @@ namespace CaseTracker.Controllers
         }
 
         // GET: api/user
+        [Authorize(Roles = AppRoles.SuperAdminOrAdmin)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -29,6 +32,11 @@ namespace CaseTracker.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
+            if (!User.CanAccessUser(id))
+            {
+                return Forbid();
+            }
+
             var user = await _userService.GetByIdAsync(id);
 
             if (user == null)
@@ -47,6 +55,21 @@ namespace CaseTracker.Controllers
         public async Task<IActionResult> GetByMobileNumber(
             string mobileNumber)
         {
+            if (!User.IsAdmin())
+            {
+                var currentUserId = User.GetUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                var currentUser = await _userService.GetByIdAsync(currentUserId.Value);
+                if (currentUser == null || !string.Equals(currentUser.MobileNumber, mobileNumber, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Forbid();
+                }
+            }
+
             var user =
                 await _userService
                     .GetByMobileNumberAsync(mobileNumber);
@@ -63,6 +86,7 @@ namespace CaseTracker.Controllers
         }
 
         // GET: api/user/mobile-exists/{mobileNumber}
+        [AllowAnonymous]
         [HttpGet("mobile-exists/{mobileNumber}")]
         public async Task<IActionResult> MobileNumberExists(
             string mobileNumber)
@@ -78,6 +102,7 @@ namespace CaseTracker.Controllers
         }
 
         // GET: api/user/email-exists?email=test@example.com
+        [AllowAnonymous]
         [HttpGet("email-exists")]
         public async Task<IActionResult> EmailExists(
             [FromQuery] string email)
