@@ -11,12 +11,9 @@ namespace CaseTrackerInfrastructure.Repositories
     /// </summary>
     public class RoleRepository : Repository<Role>, IRoleRepository
     {
-        private readonly ApplicationDbContext _context;
-
         public RoleRepository(ApplicationDbContext context)
             : base(context)
         {
-            _context = context;
         }
 
         /// <summary>

@@ -8,12 +8,9 @@ namespace CaseTrackerInfrastructure.Repositories
     public class UserRoleRepository
         : Repository<UserRole>, IUserRoleRepository
     {
-        private readonly ApplicationDbContext _context;
-
         public UserRoleRepository(ApplicationDbContext context)
             : base(context)
         {
-            _context = context;
         }
 
         public async Task<IEnumerable<string>> GetRoleNamesByUserIdAsync(Guid userId)

@@ -44,7 +44,7 @@ namespace CaseTracker.Controllers
                                 x => x.Key,
                                 x => x.Value?.Errors
                                     .Select(e => e.ErrorMessage)
-                                    .ToArray()
+                                    .ToArray() ?? Array.Empty<string>()
                             )
                     });
             }
@@ -89,7 +89,7 @@ namespace CaseTracker.Controllers
                                 x => x.Key,
                                 x => x.Value?.Errors
                                     .Select(e => e.ErrorMessage)
-                                    .ToArray()
+                                    .ToArray() ?? Array.Empty<string>()
                             )
                     });
             }

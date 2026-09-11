@@ -8,12 +8,9 @@ namespace CaseTrackerInfrastructure.Repositories
     public class UserLawFirmRepository
         : Repository<UserLawFirm>, IUserLawFirmRepository
     {
-        private readonly ApplicationDbContext _context;
-
         public UserLawFirmRepository(ApplicationDbContext context)
             : base(context)
         {
-            _context = context;
         }
 
         public async Task<IEnumerable<UserLawFirm>> GetByUserIdAsync(

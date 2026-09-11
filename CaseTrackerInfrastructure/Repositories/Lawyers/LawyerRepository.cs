@@ -11,12 +11,9 @@ namespace CaseTrackerInfrastructure.Repositories
     /// </summary>
     public class LawyerRepository : Repository<Lawyer>, ILawyerRepository
     {
-        private readonly ApplicationDbContext _context;
-
         public LawyerRepository(ApplicationDbContext context)
             : base(context)
         {
-            _context = context;
         }
 
         /// <summary>
