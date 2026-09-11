@@ -1,3 +1,6 @@
+using CaseTracker.Constants;
+using Microsoft.AspNetCore.Authorization;
+
 namespace CaseTracker.Extensions
 {
     public static class AuthorizationServiceExtensions
@@ -5,22 +8,45 @@ namespace CaseTracker.Extensions
         /// <summary>
         /// Registers authorization policies and services.
         /// </summary>
-        public static IServiceCollection AddCustomAuthorization(this IServiceCollection services)
+        public static IServiceCollection AddCustomAuthorization(
+            this IServiceCollection services)
         {
             services.AddAuthorization(options =>
             {
-                // Add default policy requiring authenticated user
-                options.DefaultPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                // Every protected endpoint requires authentication
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
 
-                // Example: Add custom policies if needed in the future
-                // options.AddPolicy("AdminOnly", policy =>
-                //     policy.RequireClaim("role", "admin"));
-                // 
-                // options.AddPolicy("LawyerAccess", policy =>
-                //     policy.RequireAuthenticatedUser()
-                //     .RequireClaim("type", "lawyer"));
+                // Company Level (SuperAdmin only)
+                options.AddPolicy("SuperAdminOnly", policy =>
+                {
+                    policy.RequireRole(AppRoles.SuperAdmin);
+                });
+
+                // Firm Level Admin or Company SuperAdmin
+                options.AddPolicy("AdminOnly", policy =>
+                {
+                    policy.RequireRole(AppRoles.SuperAdmin, AppRoles.Admin);
+                });
+
+                // Lawyer only
+                options.AddPolicy("LawyerOnly", policy =>
+                {
+                    policy.RequireRole(AppRoles.Lawyer);
+                });
+
+                // SuperAdmin, Firm Admin, or Lawyer
+                options.AddPolicy("LawyerOrAdmin", policy =>
+                {
+                    policy.RequireRole(AppRoles.SuperAdmin, AppRoles.Admin, AppRoles.Lawyer);
+                });
+
+                // Staff only
+                options.AddPolicy("StaffOnly", policy =>
+                {
+                    policy.RequireRole(AppRoles.Staff);
+                });
             });
 
             return services;

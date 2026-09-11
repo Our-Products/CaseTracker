@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 namespace CaseTracker.Extensions
@@ -40,7 +41,36 @@ namespace CaseTracker.Extensions
                     ValidateAudience = true,
                     ValidAudience = jwtAudience,
                     ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero // No tolerance for token expiration
+                    ClockSkew = TimeSpan.Zero,
+                    RoleClaimType = ClaimTypes.Role,
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        if (context.Principal?.Identity is ClaimsIdentity identity)
+                        {
+                            // Ensure both "role" and ClaimTypes.Role are populated
+                            var roleClaims = context.Principal.FindAll("role").ToList();
+                            foreach (var roleClaim in roleClaims)
+                            {
+                                if (!identity.HasClaim(ClaimTypes.Role, roleClaim.Value))
+                                {
+                                    identity.AddClaim(new Claim(ClaimTypes.Role, roleClaim.Value));
+                                }
+                            }
+
+                            // Ensure "sub" is mapped to NameIdentifier
+                            var subClaim = context.Principal.FindFirst("sub");
+                            if (subClaim != null && !identity.HasClaim(ClaimTypes.NameIdentifier, subClaim.Value))
+                            {
+                                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, subClaim.Value));
+                            }
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

@@ -1,4 +1,4 @@
-﻿using CaseTrackerDomain.Models;
+using CaseTrackerDomain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CaseTrackerInfrastructure.Data;
@@ -216,6 +216,19 @@ public class ApplicationDbContext : DbContext
             // ========================================================
 
             entity.HasData(
+                new Role
+                {
+                    RoleId = "R000",
+                    RoleName = "SuperAdmin",
+                    Status = "Active",
+                    CreatedAt = new DateTimeOffset(
+                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                    UpdatedAt = new DateTimeOffset(
+                        2026, 9, 4, 0, 0, 0, TimeSpan.Zero),
+                    CreatedBy = null,
+                    UpdatedBy = null
+                },
+
                 new Role
                 {
                     RoleId = "R001",
