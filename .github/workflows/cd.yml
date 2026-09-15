@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -31,11 +32,20 @@ jobs:
       - name: Deploy with MSDeploy
         shell: pwsh
         env:
-          WEBDEPLOY_SERVER: ${{ secrets.WEBDEPLOY_SERVER }}
-          WEBDEPLOY_SITE: ${{ secrets.WEBDEPLOY_SITE }}
-          WEBDEPLOY_USERNAME: ${{ secrets.WEBDEPLOY_USERNAME }}
-          WEBDEPLOY_PASSWORD: ${{ secrets.WEBDEPLOY_PASSWORD }}
+          WEBDEPLOY_SERVER: ${{ secrets.SERVER_COMPUTER_NAME || secrets.WEBDEPLOY_SERVER }}
+          WEBDEPLOY_SITE: ${{ secrets.WEBSITE_NAME || secrets.WEBDEPLOY_SITE }}
+          WEBDEPLOY_USERNAME: ${{ secrets.SERVER_USERNAME || secrets.WEBDEPLOY_USERNAME }}
+          WEBDEPLOY_PASSWORD: ${{ secrets.SERVER_PASSWORD || secrets.WEBDEPLOY_PASSWORD }}
         run: |
+          # Validate deployment secrets
+          if ([string]::IsNullOrWhiteSpace($env:WEBDEPLOY_SERVER) -or
+              [string]::IsNullOrWhiteSpace($env:WEBDEPLOY_SITE) -or
+              [string]::IsNullOrWhiteSpace($env:WEBDEPLOY_USERNAME) -or
+              [string]::IsNullOrWhiteSpace($env:WEBDEPLOY_PASSWORD)) {
+              Write-Error "Deployment secrets missing! Please ensure WEBSITE_NAME, SERVER_COMPUTER_NAME, SERVER_USERNAME, and SERVER_PASSWORD are configured in GitHub Settings -> Secrets and variables -> Actions."
+              exit 1
+          }
+
           # Locate msdeploy.exe on the Windows runner
           $msdeployPath = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
           if (-not (Test-Path $msdeployPath)) {
@@ -47,29 +57,42 @@ jobs:
           }
 
           # Normalize server hostname and configure remote service endpoint
-          $server = $env:WEBDEPLOY_SERVER.Trim() -replace '^https?://', '' -replace ':8172.*$', '' -replace '/.*$', ''
+          $rawServer = $env:WEBDEPLOY_SERVER.Trim()
           $site = $env:WEBDEPLOY_SITE.Trim()
           $username = $env:WEBDEPLOY_USERNAME.Trim()
           $password = $env:WEBDEPLOY_PASSWORD
-          $destComputer = "https://${server}:8172/msdeploy.axd?site=${site}"
+
+          if ($rawServer -match '^https?://.*/msdeploy\.axd') {
+              $destComputer = $rawServer
+          } else {
+              $cleanHost = $rawServer -replace '^https?://', '' -replace ':8172.*$', '' -replace '/.*$', ''
+              $destComputer = "https://${cleanHost}:8172/msdeploy.axd?site=${site}"
+          }
 
           $publishPath = (Resolve-Path "./publish").Path
 
           Write-Host "Initiating Web Deploy to $destComputer (Site: $site)..."
 
-          # Execute MSDeploy with app_offline rule to prevent locked DLLs and preserve extra files on server
-          & $msdeployPath `
-            -verb:sync `
-            -source:iisApp="$publishPath" `
-            -dest:iisApp="$site",computerName="$destComputer",userName="$username",password="$password",authType="Basic" `
-            -enableRule:AppOffline `
-            -enableRule:DoNotDeleteRule `
-            -allowUntrusted `
-            -retryAttempts:5 `
-            -retryInterval:3000
+          $destArg = "contentPath=${site},computerName=${destComputer},userName=${username},password=${password},authtype=Basic,includeAcls=False"
+
+          $msdeployArgs = @(
+              "-verb:sync",
+              "-source:contentPath=$publishPath",
+              "-dest:$destArg",
+              "-enableRule:AppOffline",
+              "-allowUntrusted",
+              "-disableLink:AppPoolExtension",
+              "-disableLink:ContentExtension",
+              "-disableLink:CertificateExtension",
+              "-retryAttempts:5",
+              "-retryInterval:3000"
+          )
+
+          & $msdeployPath $msdeployArgs
 
           if ($LASTEXITCODE -ne 0) {
-              Write-Error "MSDeploy execution failed with exit code $LASTEXITCODE"
+              Write-Error "MSDeploy execution failed with exit code $LASTEXITCODE. If you received 401 Unauthorized, make sure WebDeploy is activated under the 'Visual Studio access' tab in your MonsterASP Control Panel."
               exit $LASTEXITCODE
           }
+
           Write-Host "Deployment completed successfully!"
