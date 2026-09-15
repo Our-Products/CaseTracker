@@ -16,7 +16,7 @@ namespace CaseTracker.Extensions
                 options.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "CaseTracker API",
-                    Version = "v1.0.1",
+                    Version = "v1.0.2",
                     Description = "Enterprise Legal Practice Management & Case Tracking API - Release 1.0.1."
                 });
 
