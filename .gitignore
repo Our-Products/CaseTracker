@@ -369,3 +369,10 @@ FodyWeavers.xsd
 /CaseTrackerInfrastructure/Migrations/20260906130752_UpdateAllEntities12.Designer.cs
 /CaseTrackerInfrastructure/Migrations/20260906180806_UpdateAllEntities1.cs
 /CaseTrackerInfrastructure/Migrations/20260906180806_UpdateAllEntities1.Designer.cs
+
+# Web Deploy & Publishing Settings
+*.publishSettings
+*.PublishSettings
+*.pubxml.user
+publish/
+**/publish/

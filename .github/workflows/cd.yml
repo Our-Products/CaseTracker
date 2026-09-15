@@ -1,0 +1,75 @@
+name: CD Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy to Web Server
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore CaseTracker.slnx
+
+      - name: Build application (Release)
+        run: dotnet build CaseTracker.slnx --configuration Release --no-restore
+
+      - name: Publish application
+        run: dotnet publish CaseTracker/CaseTracker.csproj --configuration Release --no-build --output ./publish
+
+      - name: Deploy with MSDeploy
+        shell: pwsh
+        env:
+          WEBDEPLOY_SERVER: ${{ secrets.WEBDEPLOY_SERVER }}
+          WEBDEPLOY_SITE: ${{ secrets.WEBDEPLOY_SITE }}
+          WEBDEPLOY_USERNAME: ${{ secrets.WEBDEPLOY_USERNAME }}
+          WEBDEPLOY_PASSWORD: ${{ secrets.WEBDEPLOY_PASSWORD }}
+        run: |
+          # Locate msdeploy.exe on the Windows runner
+          $msdeployPath = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          if (-not (Test-Path $msdeployPath)) {
+              $msdeployPath = "C:\Program Files (x86)\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          }
+          if (-not (Test-Path $msdeployPath)) {
+              Write-Error "MSDeploy.exe not found on the runner."
+              exit 1
+          }
+
+          # Normalize server hostname and configure remote service endpoint
+          $server = $env:WEBDEPLOY_SERVER.Trim() -replace '^https?://', '' -replace ':8172.*$', '' -replace '/.*$', ''
+          $site = $env:WEBDEPLOY_SITE.Trim()
+          $username = $env:WEBDEPLOY_USERNAME.Trim()
+          $password = $env:WEBDEPLOY_PASSWORD
+          $destComputer = "https://${server}:8172/msdeploy.axd?site=${site}"
+
+          $publishPath = (Resolve-Path "./publish").Path
+
+          Write-Host "Initiating Web Deploy to $destComputer (Site: $site)..."
+
+          # Execute MSDeploy with app_offline rule to prevent locked DLLs and preserve extra files on server
+          & $msdeployPath `
+            -verb:sync `
+            -source:iisApp="$publishPath" `
+            -dest:iisApp="$site",computerName="$destComputer",userName="$username",password="$password",authType="Basic" `
+            -enableRule:AppOffline `
+            -enableRule:DoNotDeleteRule `
+            -allowUntrusted `
+            -retryAttempts:5 `
+            -retryInterval:3000
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "MSDeploy execution failed with exit code $LASTEXITCODE"
+              exit $LASTEXITCODE
+          }
+          Write-Host "Deployment completed successfully!"
