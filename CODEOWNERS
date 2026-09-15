@@ -1,0 +1,7 @@
+# GitHub CODEOWNERS File
+# Defines the individuals or teams responsible for code in this repository.
+# These owners will be automatically requested for review when a Pull Request is opened.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository
+* @soorya1609
