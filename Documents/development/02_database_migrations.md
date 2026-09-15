@@ -1,7 +1,7 @@
 # CaseTracker — Database Migrations Guide
 
 > **ORM:** Entity Framework Core  
-> **Provider:** Npgsql.EntityFrameworkCore.PostgreSQL  
+> **Provider:** `Npgsql.EntityFrameworkCore.PostgreSQL`  
 > **Target Project:** `CaseTrackerInfrastructure`  
 > **Startup Project:** `CaseTracker`  
 > **Parent Documentation:** [Documentation Center](../README.md)
@@ -19,7 +19,7 @@ Database schema changes in CaseTracker are managed using **EF Core Code-First Mi
 
 ## 2. Essential Migration Commands
 
-Always execute migration commands from the solution root (`D:\CaseTracker\Backend`):
+Always execute migration commands from the solution root:
 
 ### 2.1 Applying Migrations to Database
 Updates the PostgreSQL database schema to the latest migration:
@@ -32,6 +32,7 @@ When you modify or add entity models in `CaseTrackerDomain` or update mappings i
 ```powershell
 dotnet ef migrations add <MigrationName> --project CaseTrackerInfrastructure --startup-project CaseTracker
 ```
+
 *Example:*
 ```powershell
 dotnet ef migrations add AddClientAndCaseEntities --project CaseTrackerInfrastructure --startup-project CaseTracker
@@ -53,17 +54,10 @@ dotnet ef database update <TargetMigrationName> --project CaseTrackerInfrastruct
 
 ## 3. Generating Raw SQL Scripts for Production
 
-Never run `dotnet ef database update` directly against a production database in CI/CD. Instead, generate idempotent SQL deployment scripts:
+Never run `dotnet ef database update` directly against a high-security production database. Instead, generate idempotent SQL deployment scripts:
 
 ```powershell
 dotnet ef migrations script --idempotent --output ./deployment_script.sql --project CaseTrackerInfrastructure --startup-project CaseTracker
 ```
 
----
-
-## 4. Best Practices for CaseTracker Migrations
-
-1. **Review Generated Migration**: Always inspect the generated C# code in `CaseTrackerInfrastructure/Migrations/` before applying it.
-2. **Explicit Column Types & Lengths**: Ensure all string columns specify explicit lengths (`HasMaxLength(200)`) and appropriate SQL column types (`timestamptz` for timestamps).
-3. **Foreign Key Restraints**: Pay strict attention to `OnDelete` rules (`DeleteBehavior.Restrict` for audit keys, `DeleteBehavior.Cascade` for parent-child lifecycles, and `DeleteBehavior.SetNull` for optional associations).
-
+* `--idempotent`: Generates SQL that conditionally applies migrations only if they haven't been applied yet, making it completely safe to run repeatedly.

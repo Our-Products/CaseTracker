@@ -1,121 +1,154 @@
-# CaseTracker — System Architecture & Layering
+# CaseTracker — System Architecture & Clean Layering
 
-> **Document Version:** 1.0  
+> **Document Version:** 1.2  
+> **Framework:** ASP.NET Core (.NET 10)  
 > **Pattern:** Clean Architecture (Onion / Hexagonal Architecture)  
-> **Status:** Approved Baseline  
+> **Status:** Active Baseline  
 > **Parent Documentation:** [Documentation Center](../README.md)
 
 ---
 
 ## 1. Architectural Philosophy
 
-CaseTracker adheres to **Clean Architecture** (Dependency Inversion Principle). 
-The core rule is: **Dependencies flow strictly inward.**
-* Outer layers know about inner layers.
-* Inner layers (such as Domain and Application) have **zero knowledge** of UI frameworks, database engines, or web protocols.
+CaseTracker is structured according to the principles of **Clean Architecture** (Robert C. Martin) and the **Dependency Inversion Principle**:
+
+* **Dependencies flow strictly inward**: Outer layers depend on inner layers; inner layers never depend on outer layers.
+* **Domain Independence**: The Domain Layer (`CaseTrackerDomain`) and Application Layer (`CaseTrackerApplication`) are completely decoupled from concrete frameworks, web servers, databases, and UI implementations.
+* **Separation of Concerns**: Business validation, database persistence, HTTP presentation, and external service gateways are isolated in distinct project assemblies.
 
 ```mermaid
 graph TD
-    subgraph Layer4 ["1. Presentation Layer (API & Mobile)"]
-        API["CaseTracker (ASP.NET Core Controllers & Middleware)"]
-        Mobile["CaseTrackerMobile (.NET MAUI & MVVM)"]
+    subgraph PresentationLayer ["1. Presentation Layer (CaseTracker API)"]
+        API["Controllers<br/>AuthController • UsersController • LawyersController"]
+        Middleware["Middleware<br/>GlobalExceptionHandlerMiddleware • JWT Auth"]
+        Swagger["Swagger & OpenAPI Documentation"]
     end
 
-    subgraph Layer3 ["2. Infrastructure Layer"]
-        Infra["CaseTrackerInfrastructure<br/>(EF Core DbContext, Repositories, JWT, Security)"]
+    subgraph ApplicationLayer ["2. Application Layer (CaseTrackerApplication)"]
+        AppServices["Application Services<br/>AuthService • LawyerService • LawFirmService"]
+        DTOs["Data Transfer Objects (DTOs)"]
+        Interfaces["Repository & UnitOfWork Interfaces"]
+        Exceptions["Domain Exceptions (NotFound, Conflict, Validation)"]
     end
 
-    subgraph Layer2 ["3. Application Layer"]
-        App["CaseTrackerApplication<br/>(Services, DTOs, Repository Interfaces, UnitOfWork)"]
+    subgraph DomainLayer ["3. Domain Layer (CaseTrackerDomain)"]
+        DomainEntities["Domain Entities<br/>User • Lawyer • LawFirm • Role • UserRole • UserLawFirm"]
+        Enums["Domain Constants & Status Enums"]
     end
 
-    subgraph Layer1 ["4. Domain Layer (The Core)"]
-        Domain["CaseTrackerDomain<br/>(Entities: User, Lawyer, LawFirm, Role)"]
+    subgraph InfrastructureLayer ["4. Infrastructure Layer (CaseTrackerInfrastructure)"]
+        DbContext["EF Core ApplicationDbContext"]
+        Repos["Concrete Repositories (UserRepository, LawyerRepository)"]
+        UoW["UnitOfWork Implementation"]
+        Security["BCrypt PasswordHasher • JWT TokenService"]
     end
 
-    API --> App
-    Mobile -.->|Network REST Calls| API
-    Infra --> App
-    Infra --> Domain
-    App --> Domain
+    subgraph ExternalServices ["External Infrastructure"]
+        Postgres[("Neon Cloud PostgreSQL<br/>(Serverless Pooler)")]
+        IIS["MonsterASP.net IIS Web Server"]
+    end
+
+    API --> AppServices
+    API --> Middleware
+    Middleware --> AppServices
+    AppServices --> DomainEntities
+    AppServices --> Interfaces
+    AppServices --> DTOs
+    AppServices --> Exceptions
+    InfrastructureLayer --> Interfaces
+    InfrastructureLayer --> DomainEntities
+    DbContext --> Postgres
+    IIS --> API
 ```
 
 ---
 
-## 2. Layer-by-Layer Responsibilities
+## 2. Project Assemblies & Responsibilities
 
-### 2.1 Domain Layer (`CaseTrackerDomain`)
-* **Purpose**: Represents the core business models and state of the legal domain.
-* **Dependencies**: Completely standalone. No references to EF Core, ASP.NET Core, or third-party libraries.
-* **Key Components**:
-  * Core entities: [`User`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/User.cs), [`Lawyer`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/Lawyer.cs), [`LawFirm`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/LawFirm.cs), [`Role`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/Role.cs), [`UserRole`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/UserRole.cs), [`UserLawFirm`](file:///D:/CaseTracker/Backend/CaseTrackerDomain/Models/UserLawFirm.cs).
-  * Standardized audit fields: `CreatedAt`, `UpdatedAt`, `CreatedBy`, `UpdatedBy`.
+### 2.1 `CaseTrackerDomain` (Domain Core)
+* **Zero External Dependencies**: Pure C# class library.
+* **Contains**:
+  * Core entity definitions with navigation properties.
+  * Audit fields (`CreatedAt`, `UpdatedAt`, `CreatedBy`, `UpdatedBy`).
+  * Enforces state consistency across aggregate roots.
 
-### 2.2 Application Layer (`CaseTrackerApplication`)
-* **Purpose**: Orchestrates use cases and encapsulates business workflow rules.
-* **Dependencies**: References only `CaseTrackerDomain`.
-* **Key Components**:
-  * **DTOs**: Encapsulate incoming requests (`RegisterRequest`, `LoginRequest`) and outbound responses (`AuthResult`, `ApiResponse`).
-  * **Interfaces**: Decoupled repository contracts (`IUserRepository`, `ILawyerRepository`), Unit of Work (`IUnitOfWork`), and service contracts (`IAuthService`, `IJwtService`, `IPasswordService`).
-  * **Business Services**: Concrete implementation of workflows (`AuthService`, `LawyerService`, `LawFirmService`).
-  * **Custom Exceptions**: Domain-specific exceptions (`ValidationException`, `NotFoundException`, `ConflictException`, `UnauthorizedException`).
+### 2.2 `CaseTrackerApplication` (Use Cases & Business Logic)
+* **Dependencies**: References `CaseTrackerDomain` only.
+* **Contains**:
+  * **DTOs**: Request and response payloads (e.g. `RegisterRequest`, `LoginRequest`, `AuthResult`, `ApiResponse<T>`).
+  * **Contracts**: `IUserRepository`, `ILawyerRepository`, `ILawFirmRepository`, `IRoleRepository`, `IUnitOfWork`, `IAuthService`, `IJwtService`, `IPasswordService`.
+  * **Business Workflows**: Multi-step operations like lawyer registration, role assignment, and validation checks.
+  * **Exceptions**: Custom domain exceptions mapped to HTTP response codes.
 
-### 2.3 Infrastructure Layer (`CaseTrackerInfrastructure`)
-* **Purpose**: Encapsulates external I/O concerns, database access, and cryptographic algorithms.
+### 2.3 `CaseTrackerInfrastructure` (Data Access & Security)
 * **Dependencies**: References `CaseTrackerApplication` and `CaseTrackerDomain`.
-* **Key Components**:
-  * **Data Access**: [`ApplicationDbContext`](file:///D:/CaseTracker/Backend/CaseTrackerInfrastructure/Data/ApplicationDbContext.cs) with PostgreSQL table configurations and index constraints.
-  * **Repositories**: Concrete data access classes inheriting from generic `Repository<T>`.
-  * **Transactions**: `UnitOfWork` for transactional consistency across multiple repository operations.
-  * **Security**: Password hashing and token generation in `PasswordService` and `JwtService`.
+* **Contains**:
+  * **`ApplicationDbContext`**: Configures PostgreSQL tables, schemas, relations, indexes, and seed data.
+  * **Repositories**: Generic `Repository<T>` and specialized repositories implementing application contracts.
+  * **`UnitOfWork`**: Manages EF Core database transactions (`BeginTransactionAsync`, `CommitTransactionAsync`, `RollbackTransactionAsync`).
+  * **Security**: Concrete password hashing and JWT token issuance.
 
-### 2.4 Presentation Layer (`CaseTracker` Web API)
-* **Purpose**: Exposes REST endpoints, parses HTTP payloads, handles authentication tokens, and transforms exceptions into clean responses.
+### 2.4 `CaseTracker` (Presentation Web API)
 * **Dependencies**: References `CaseTrackerApplication` and `CaseTrackerInfrastructure`.
-* **Key Components**:
-  * **Controllers**: Lean, delegating endpoints (`AuthController`, `LawyerController`, `LawFirmController`).
-  * **Middleware**: `GlobalExceptionHandlerMiddleware` catches all exceptions and normalizes error payloads.
-  * **Extensions**: Clean modular service registration (`ApplicationServiceExtensions`, `InfrastructureServiceExtensions`, `AuthenticationServiceExtensions`).
-
-### 2.5 Mobile Client (`CaseTrackerMobile`)
-* **Purpose**: Cross-platform advocate client on iOS, Android, and Windows.
-* **Dependencies**: References `CaseTrackerApplication` for DTO reuse. Communicates with `CaseTracker` over HTTPS REST APIs.
+* **Contains**:
+  * **Controllers**: Exposes REST endpoints (`/api/auth`, `/api/lawyers`, `/api/version`, etc.).
+  * **Middleware**: `GlobalExceptionHandlerMiddleware` captures all unhandled exceptions and outputs consistent RFC-compliant JSON responses.
+  * **Service Registration**: Clean extension methods in `Extensions/` for dependency injection.
 
 ---
 
-## 3. End-to-End Request Lifecycle
+## 3. End-to-End Request Execution Pipeline
 
-The diagram below details the sequence of a typical authenticated request (e.g., advocate registration or case query):
+The flowchart below demonstrates the path of an HTTP request through the system:
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Advocate as Advocate (Mobile App)
-    participant Ctrl as CaseTracker API (AuthController)
+    actor Client as Client / Mobile App
+    participant IIS as IIS Web Server (MonsterASP)
+    participant Pipe as ASP.NET Core Middleware Pipeline
     participant MW as GlobalExceptionHandlerMiddleware
-    participant Svc as AuthService (Application)
-    participant Repo as UserRepository & LawyerRepository
-    participant UoW as UnitOfWork
-    participant DB as PostgreSQL Database
+    participant Auth as JWT Authentication Handler
+    participant Ctrl as API Controller (e.g. LawyersController)
+    participant Svc as Application Service (e.g. LawyerService)
+    participant Repo as LawyerRepository
+    participant DB as Neon PostgreSQL
 
-    Advocate->>Ctrl: POST /api/auth/register (JSON Payload)
-    Ctrl->>MW: Pass through pipeline
-    MW->>Svc: RegisterAsync(RegisterRequest)
-    Note over Svc: Validate mobile format & email
-    Svc->>Repo: Check if Mobile/Email exists
-    Repo->>DB: SELECT ux_users_mobile_number
-    DB-->>Repo: Not found (OK)
-    Svc->>UoW: BeginTransactionAsync()
-    Svc->>Repo: AddAsync(User) & AddAsync(Lawyer)
-    Svc->>UoW: SaveChangesAsync()
-    UoW->>DB: INSERT INTO users, INSERT INTO lawyers
-    Svc->>UoW: CommitTransactionAsync()
-    Svc-->>Ctrl: AuthResult (JWT Token)
-    Ctrl-->>Advocate: 200 OK { token, expiresAt, userId }
-
-    opt When Validation or Duplicate Key Fails
-        Svc-->>MW: throws ConflictException / ValidationException
-        MW-->>Advocate: 409 Conflict / 400 BadRequest { success: false, message, errors }
+    Client->>IIS: HTTP GET /api/lawyers/{id} (Bearer Token)
+    IIS->>Pipe: Forward to Kestrel / AspNetCoreModuleV2
+    Pipe->>MW: Enter GlobalExceptionHandlerMiddleware
+    MW->>Auth: Validate JWT Signature & Claims
+    alt Invalid or Expired Token
+        Auth-->>Client: 401 Unauthorized
+    else Valid Token
+        Auth->>Ctrl: Invoke Controller Action with ClaimsPrincipal
+        Ctrl->>Svc: GetLawyerByIdAsync(id)
+        Svc->>Repo: GetByIdAsync(id)
+        Repo->>DB: SELECT * FROM lawyers WHERE lawyer_id = @id
+        DB-->>Repo: Query Result Row
+        Repo-->>Svc: Lawyer Entity
+        alt Lawyer Not Found
+            Svc-->>MW: throw NotFoundException("Lawyer not found")
+            MW-->>Client: 404 Not Found { success: false, message }
+        else Lawyer Found
+            Svc-->>Ctrl: LawyerDto
+            Ctrl-->>Client: 200 OK { success: true, data: LawyerDto }
+        end
     end
 ```
 
+---
+
+## 4. Error Handling Strategy
+
+All system exceptions are processed centrally by [`GlobalExceptionHandlerMiddleware`](file:///d:/ProjectApp/CaseTracker/CaseTracker/Middleware/GlobalExceptionHandlerMiddleware.cs):
+
+| Exception Type | HTTP Status | Response Schema |
+| :--- | :---: | :--- |
+| `ValidationException` | `400 Bad Request` | `{ success: false, message: "Validation failed", errors: [...] }` |
+| `UnauthorizedAccessException` / `UnauthorizedException` | `401 Unauthorized` | `{ success: false, message: "Unauthorized" }` |
+| `KeyNotFoundException` / `NotFoundException` | `404 Not Found` | `{ success: false, message: "Resource not found" }` |
+| `InvalidOperationException` / `ConflictException` | `409 Conflict` | `{ success: false, message: "Conflict occurred" }` |
+| Unhandled Exceptions | `500 Internal Server Error` | `{ success: false, message: "An unexpected error occurred" }` |
+
+This prevents stack traces and database internal details from ever leaking to the client in production.

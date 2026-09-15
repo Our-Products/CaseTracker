@@ -1,6 +1,6 @@
 # CaseTracker — Developer Onboarding & Local Setup
 
-> **Document Version:** 1.0  
+> **Document Version:** 1.1  
 > **Target Audience:** Software Engineers, QA Engineers, DevOps  
 > **Parent Documentation:** [Documentation Center](../README.md)
 
@@ -11,10 +11,9 @@
 To develop, build, and debug CaseTracker, install the following:
 
 * **[.NET 10 SDK](https://dotnet.microsoft.com/)**
-* **[Visual Studio 2022](https://visualstudio.microsoft.com/) (v17.10+ / Preview)** or **VS Code**:
+* **[Visual Studio 2022 / 2025](https://visualstudio.microsoft.com/)** (v17.10+ / Preview) or **[VS Code](https://code.visualstudio.com/)**:
   * Workload: *ASP.NET and web development*
-  * Workload: *.NET Multi-platform App UI development (.NET MAUI)*
-* **[PostgreSQL 16+](https://www.postgresql.org/)** (or Docker container running PostgreSQL)
+* **[PostgreSQL 16+](https://www.postgresql.org/)** (or cloud [Neon.tech](https://neon.tech/))
 * **[Git](https://git-scm.com/)**
 * **EF Core CLI Tool**:
   ```powershell
@@ -27,18 +26,18 @@ To develop, build, and debug CaseTracker, install the following:
 
 ### 2.1 Clone the Repository
 ```powershell
-git clone <repository-url>
-cd D:\CaseTracker\Backend
+git clone https://github.com/Our-Products/CaseTracker.git
+cd CaseTracker
 ```
 
 ### 2.2 Configure PostgreSQL Database
-Ensure your local PostgreSQL service is running on port 5432.
+You can use either a local PostgreSQL instance or the cloud Neon PostgreSQL database.
 
-Open [`CaseTracker/appsettings.Development.json`](file:///D:/CaseTracker/Backend/CaseTracker/appsettings.Development.json) and verify your connection string:
+Open `CaseTracker/appsettings.Development.json` and verify your connection string:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=CaseTracker;Username=postgres;Password=your_postgres_password;"
+    "DefaultConnection": "Host=ep-dry-silence-aepi0j4w-pooler.c-2.us-east-2.aws.neon.tech; Database=CaseTracker; Username=neondb_owner; Password=npg_KEhBgumG9Dv6; SSL Mode=VerifyFull; Channel Binding=Require;"
   },
   "Jwt": {
     "Key": "YOUR_SUPER_SECRET_JWT_KEY_MIN_32_CHARS_FOR_HS256!!!",
@@ -59,38 +58,25 @@ dotnet ef database update --project CaseTrackerInfrastructure --startup-project 
 
 ## 3. Running the Backend Web API
 
-Execute the Web API via CLI or Visual Studio:
+Execute from the solution root:
 ```powershell
-dotnet run --project CaseTracker
+dotnet run --project CaseTracker/CaseTracker.csproj
 ```
-* **Swagger UI**: Navigate to `https://localhost:7232/swagger`
-* **API Base Address**: `https://localhost:7232/api/`
+
+The Web API will launch locally with endpoints:
+* **HTTPS**: `https://localhost:7198`
+* **HTTP**: `http://localhost:5222`
+* **Swagger UI**: `https://localhost:7198/swagger/index.html`
+* **Version API**: `https://localhost:7198/api/version`
 
 ---
 
-## 4. Running the .NET MAUI Mobile App
+## 4. Running Automated Tests & Builds
 
-1. Open `CaseTracker.slnx` in Visual Studio.
-2. Set **`CaseTrackerMobile`** as the Startup Project.
-3. Select your target debugging platform:
-   * **Android Emulator / Physical Device**: (Uses `10.0.2.2:7232` for emulator-to-host communication).
-   * **Windows Machine**: Local native desktop execution.
-   * **iOS Simulator / MacCatalyst**: Requires pairing with a networked Mac.
-4. Press **F5** to build and deploy.
+```powershell
+# Restore dependencies
+dotnet restore CaseTracker.slnx
 
----
-
-## 5. Seed Test Advocate Account
-
-For immediate testing of login, dashboard, and cause list views, use the pre-configured credentials:
-
-| Field | Value |
-| :--- | :--- |
-| **Mobile Number** | `9876543210` |
-| **Password** | `Password123!` |
-| **Advocate Name** | Adv. R. Sundaram |
-| **Bar Council ID** | `TN/1042/2018` |
-| **Law Firm** | Sundaram & Associates |
-| **Active Cases** | 42 |
-| **Today's Hearings** | 5 |
-
+# Compile in Release mode
+dotnet build CaseTracker.slnx --configuration Release
+```

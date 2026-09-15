@@ -1,112 +1,123 @@
-# CaseTracker — Authentication & Authorization API Flow
+# CaseTracker — Authentication & Security Handshake
 
-> **Base Route:** `/api/auth`  
-> **Auth Scheme:** Bearer `<JWT_TOKEN>`  
+> **Document Version:** 1.1  
+> **Scheme:** JSON Web Token (JWT) Bearer Authentication  
+> **Algorithm:** HMAC-SHA256 (`HS256`)  
+> **Hashing Algorithm:** PBKDF2 / BCrypt with Unique Salt  
 > **Parent Documentation:** [Documentation Center](../README.md)
 
 ---
 
-## 1. Overview
+## 1. Authentication Architecture
 
-CaseTracker uses **JWT (JSON Web Token)** stateless bearer authentication. All API routes require authorization headers except `/api/auth/login` and `/api/auth/register`.
-
-```text
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
----
-
-## 2. Registration Flow (`POST /api/auth/register`)
-
-Supports registration for both **Individual Advocates** and **Law Firms / Organizations**.
-
-### Sequence Diagram
+CaseTracker uses **stateless token-based authentication**. Clients authenticate via credentials (Mobile Number / Email + Password) and receive a signed JWT Bearer Token, which must be presented in subsequent HTTP requests via the `Authorization: Bearer <token>` header.
 
 ```mermaid
 sequenceDiagram
-    actor Client as Mobile Client
-    participant AuthCtrl as AuthController
-    participant AuthSvc as AuthService
-    participant PassSvc as PasswordService
-    participant DB as PostgreSQL
+    autonumber
+    actor User as User / Advocate
+    participant Client as Client Application
+    participant API as CaseTracker API (/api/auth)
+    participant Hasher as PasswordService
+    participant DB as PostgreSQL Database
+    participant JWT as JwtService
 
-    Client->>AuthCtrl: POST /api/auth/register
-    AuthCtrl->>AuthSvc: RegisterAsync(request)
-    AuthSvc->>DB: Check Mobile Number & Email uniqueness
-    AuthSvc->>PassSvc: HashPassword(plainPassword)
-    PassSvc-->>AuthSvc: hashedPassword
-    AuthSvc->>DB: Begin Transaction & Save User, Role, Lawyer/Firm
-    DB-->>AuthSvc: Committed
-    AuthSvc-->>AuthCtrl: AuthResult (Token, Expiry, UserId)
-    AuthCtrl-->>Client: 200 OK (AuthResult JSON)
+    %% REGISTRATION FLOW
+    rect rgb(240, 248, 255)
+    Note over User, JWT: 1. Registration Flow
+    User->>Client: Submit Full Name, Mobile, Email, Bar Council ID, Password
+    Client->>API: POST /api/auth/register
+    API->>DB: Check if Mobile or Email exists
+    alt Mobile or Email Exists
+        DB-->>API: Duplicate Found
+        API-->>Client: 409 Conflict ("Account already exists")
+    else New Account
+        API->>Hasher: HashPassword(rawPassword)
+        Hasher-->>API: Hashed Password + Salt
+        API->>DB: Insert User, Lawyer, and UserRole records in single transaction
+        DB-->>API: Transaction Committed
+        API->>JWT: GenerateToken(User, Roles, Firm)
+        JWT-->>API: Signed JWT Token
+        API-->>Client: 200 OK { token, expiresAt, userId }
+        Client->>Client: Store Token securely in keychain/storage
+    end
+    end
+
+    %% LOGIN FLOW
+    rect rgb(245, 255, 250)
+    Note over User, JWT: 2. Login Flow
+    User->>Client: Enter Mobile Number & Password
+    Client->>API: POST /api/auth/login
+    API->>DB: Query User by Mobile Number
+    alt User Not Found or Inactive
+        DB-->>API: Null or Status != Active
+        API-->>Client: 401 Unauthorized ("Invalid credentials")
+    else User Exists
+        API->>Hasher: VerifyPassword(rawPassword, storedHash)
+        alt Password Mismatch
+            Hasher-->>API: Verification Failed
+            API-->>Client: 401 Unauthorized ("Invalid credentials")
+        else Password Valid
+            Hasher-->>API: Verification Passed
+            API->>DB: Fetch User Roles & Associated LawFirm
+            DB-->>API: Roles: ['Lawyer']
+            API->>JWT: GenerateToken(User, Roles, Firm)
+            JWT-->>API: Signed JWT Token
+            API-->>Client: 200 OK { token, expiresAt, userId }
+        end
+    end
+    end
+
+    %% AUTHENTICATED REQUEST FLOW
+    rect rgb(255, 250, 240)
+    Note over User, JWT: 3. Authenticated Request Flow
+    Client->>API: GET /api/lawyers/{id}<br/>Authorization: Bearer <token>
+    API->>API: Validate Token Signature & Expiry
+    alt Token Invalid or Expired
+        API-->>Client: 401 Unauthorized
+    else Token Valid
+        API->>API: Extract Claims (UserId, Roles, FirmId)
+        API->>API: Evaluate Authorization Policy
+        API-->>Client: 200 OK (Requested Resource)
+    end
+    end
 ```
 
-### Request Payload (Individual Lawyer)
+---
+
+## 2. JWT Token Structure & Claims
+
+Every issued token contains the following cryptographically signed payload:
+
+### Token Header
 ```json
 {
-  "registerType": 0,
-  "mobileNumber": "9876543210",
-  "email": "advocate@test.com",
-  "password": "Password123!",
-  "fullName": "Adv. R. Sundaram",
-  "barCouncilId": "TN/1042/2018",
-  "barCouncilName": "Bar Council of Tamil Nadu and Puducherry",
-  "enrollmentDate": "2018-06-15T00:00:00Z"
+  "alg": "HS256",
+  "typ": "JWT"
 }
 ```
 
-### Request Payload (Organization / Law Firm)
+### Token Payload
 ```json
 {
-  "registerType": 1,
-  "mobileNumber": "9876543211",
-  "email": "admin@sundaramassociates.com",
-  "password": "Password123!",
-  "fullName": "Senior Managing Partner",
-  "lawFirm": {
-    "firmName": "Sundaram & Associates",
-    "registrationNumber": "SR/TN/2020/001",
-    "addressLine1": "No. 42, Armenian Street",
-    "addressLine2": "George Town",
-    "city": "Chennai",
-    "district": "Chennai",
-    "state": "Tamil Nadu",
-    "pincode": 600001
-  }
+  "sub": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "nameid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "mobile_phone": "+919876543210",
+  "email": "advocate.soorya@example.com",
+  "role": "Lawyer",
+  "law_firm_id": "b1b2b3b4-5717-4562-b3fc-2c963f66afa6",
+  "jti": "d3b07384-d113-40e1-9d8e-0f0e0c0d0e0f",
+  "iss": "CaseTracker",
+  "aud": "CaseTrackerAudience",
+  "exp": 1789531200,
+  "iat": 1789527600
 }
 ```
 
 ---
 
-## 3. Login Flow (`POST /api/auth/login`)
+## 3. Password Security Standard
 
-Authenticates an existing user via mobile number and password.
-
-### Request Payload
-```json
-{
-  "mobileNumber": "9876543210",
-  "password": "Password123!"
-}
-```
-
-### Success Response (`200 OK`)
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiresAt": "2026-09-08T08:04:00Z",
-  "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "lawFirmId": null
-}
-```
-
-### Error Response (`401 Unauthorized`)
-```json
-{
-  "success": false,
-  "message": "Invalid credentials.",
-  "errors": null,
-  "data": null
-}
-```
-
+* Passwords must be at least **8 characters long** and contain at least one uppercase letter, one lowercase letter, one digit, and one special character.
+* Plaintext passwords are **never stored or logged**.
+* Hashing utilizes PBKDF2 with HMAC-SHA256 (or BCrypt) using a cryptographically secure randomly generated salt.
