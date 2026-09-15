@@ -88,6 +88,7 @@ namespace CaseTracker.Middleware
                 // 403 - Forbidden
                 // ----------------------------------------
 
+
                 case ForbiddenException forbiddenException:
 
                     statusCode =
