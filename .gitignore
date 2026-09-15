@@ -376,3 +376,9 @@ FodyWeavers.xsd
 *.pubxml.user
 publish/
 **/publish/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
