@@ -17,7 +17,7 @@ namespace CaseTracker.Extensions
                 {
                     Title = "CaseTracker API",
                     Version = "v1.0.2",
-                    Description = "Enterprise Legal Practice Management & Case Tracking API - Release 1.0.1."
+                    Description = "Enterprise Legal Practice Management & Case Tracking API - Release 1.0.2."
                 });
 
                 // Configure JWT Bearer Security Scheme
