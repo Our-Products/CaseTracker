@@ -33,7 +33,20 @@ builder.Services.AddSwaggerDocumentation();
 // BUILD APPLICATION
 // ==============================
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Expo", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("Expo");
 
 // ==============================
 // HTTP REQUEST PIPELINE
