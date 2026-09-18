@@ -3,4 +3,4 @@ Add-Migration Initial-1 -Context CaseTrackerInfrastructure.Data.ApplicationDbCon
 Remove-Migration -Context CaseTrackerInfrastructure.Data.ApplicationDbContext -Project CaseTrackerInfrastructure -StartupProject CaseTracker
 
 
-update-database
+update-database -Context CaseTrackerInfrastructure.Data.ApplicationDbContext -Project CaseTrackerInfrastructure -StartupProject CaseTracker
