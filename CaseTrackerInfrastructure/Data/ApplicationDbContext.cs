@@ -14,13 +14,15 @@ public class ApplicationDbContext : DbContext
     // ============================================================
     // DB SETS
     // ============================================================
-
+ 
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<UserRole> UserRoles { get; set; } = null!;
     public DbSet<Lawyer> Lawyers { get; set; } = null!;
     public DbSet<LawFirm> LawFirms { get; set; } = null!;
     public DbSet<UserLawFirm> UserLawFirms { get; set; } = null!;
+
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -725,5 +727,46 @@ public class ApplicationDbContext : DbContext
         // ============================================================
 
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("refresh_tokens");
+
+            entity.HasKey(x => x.Id);
+
+            entity.Property(x => x.Id)
+                .HasColumnName("id");
+
+            entity.Property(x => x.UserId)
+                .HasColumnName("user_id")
+                .IsRequired();
+
+            entity.Property(x => x.TokenHash)
+                .HasColumnName("token_hash")
+                .HasMaxLength(500)
+                .IsRequired();
+
+            entity.Property(x => x.CreatedAt)
+                .HasColumnName("created_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+
+            entity.Property(x => x.ExpiresAt)
+                .HasColumnName("expires_at")
+                .HasColumnType("timestamptz")
+                .IsRequired();
+
+            entity.Property(x => x.RevokedAt)
+                .HasColumnName("revoked_at")
+                .HasColumnType("timestamptz");
+
+            entity.HasIndex(x => x.TokenHash)
+                .IsUnique();
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

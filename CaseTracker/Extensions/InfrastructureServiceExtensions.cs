@@ -1,8 +1,10 @@
 using CaseTrackerApplication.Interfaces.Repositories;
 using CaseTrackerApplication.Interfaces.Services;
+using CaseTrackerApplication.Interfaces.Services.Auth;
 using CaseTrackerInfrastructure.Data;
 using CaseTrackerInfrastructure.Repositories;
 using CaseTrackerInfrastructure.Services;
+using CaseTrackerInfrastructure.Services.Auth;
 using CaseTrackerInfrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,6 +61,7 @@ namespace CaseTracker.Extensions
 
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
             return services;
         }
