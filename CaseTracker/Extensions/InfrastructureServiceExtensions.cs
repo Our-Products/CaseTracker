@@ -1,5 +1,7 @@
+using CaseTrackerApplication.AI;
 using CaseTrackerApplication.Interfaces.Repositories;
 using CaseTrackerApplication.Interfaces.Services;
+using CaseTrackerInfrastructure.AI;
 using CaseTrackerInfrastructure.Data;
 using CaseTrackerInfrastructure.Repositories;
 using CaseTrackerInfrastructure.Services;
@@ -59,6 +61,23 @@ namespace CaseTracker.Extensions
 
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
+
+            // ==============================
+            // AI SERVICES
+            // ==============================
+
+            var aiBaseUrl =
+                configuration["AI:BaseUrl"]
+                ?? throw new InvalidOperationException(
+                    "AI base URL is not configured. Add 'AI:BaseUrl' to appsettings.");
+
+            services.AddHttpClient("Ollama", client =>
+            {
+                client.BaseAddress = new Uri(aiBaseUrl);
+                client.Timeout = TimeSpan.FromSeconds(120);
+            });
+
+            services.AddScoped<IAIService, OllamaAIService>();
 
             return services;
         }
