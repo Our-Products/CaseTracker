@@ -1,0 +1,18 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ConnectionStrings:DefaultConnection": "Host=ep-dry-silence-aepi0j4w-pooler.c-2.us-east-2.aws.neon.tech; Database=CaseTracker; Username=neondb_owner; Password=npg_KEhBgumG9Dv6; SSL Mode=VerifyFull; Channel Binding=Require;",
+    "ECourts:BaseUrl": "https://webapi.ecourtsindia.com",
+    "ECourts:ApiKey": "eci_live_ab4fq583183q7k7aa5ywlge5ps7fkraf",
+    "CourtMasterSync:Schedule": "0 0 2 1 * *",
+    "CourtMasterSync:Enabled": "true",
+    "CourtMasterSync:RunOnStartup": "true",
+    "CourtMasterSync:MaxApiRequestsPerRun": "500",
+    "CourtMasterSync:RetryCount": "3",
+    "CourtMasterSync:RetryDelaySeconds": "2",
+    "CaseStatusSync:Schedule": "0 0 3 * * *",
+    "HearingSync:Schedule": "0 0 4 * * *"
+  }
+}

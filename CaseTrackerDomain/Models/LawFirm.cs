@@ -37,5 +37,12 @@ namespace CaseTrackerDomain.Models
 
         public User? UpdatedByUser { get; set; }
 
+        public ICollection<Lawyer> Lawyers { get; set; } = new List<Lawyer>();
+
+        public ICollection<UserLawFirm> UserLawFirms { get; set; } = new List<UserLawFirm>();
+
+        public ICollection<Client> Clients { get; set; } = new List<Client>();
+
+        public ICollection<Case> Cases { get; set; } = new List<Case>();
     }
 }

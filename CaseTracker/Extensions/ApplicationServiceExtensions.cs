@@ -38,6 +38,14 @@ namespace CaseTracker.Extensions
                 IUserLawFirmService,
                 UserLawFirmService>();
 
+            // Legal Matters & Core Operations
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.Cases.ICaseService, CaseTrackerApplication.Services.Cases.CaseService>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.Clients.IClientService, CaseTrackerApplication.Services.Clients.ClientService>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.Hearings.IHearingService, CaseTrackerApplication.Services.Hearings.HearingService>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.Courts.ICourtMasterService, CaseTrackerApplication.Services.Courts.CourtMasterService>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.Courts.ICourtMasterSyncService, CaseTrackerApplication.Services.Courts.CourtMasterSyncService>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Services.ECourts.IECourtSyncService, CaseTrackerApplication.Services.ECourts.ECourtSyncService>();
+
             return services;
         }
     }
