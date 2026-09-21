@@ -48,6 +48,11 @@ namespace CaseTracker.Extensions
             services.AddScoped<
                 IUserRoleRepository,
                 UserRoleRepository>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Repositories.Cases.ICaseRepository, CaseTrackerInfrastructure.Repositories.Cases.CaseRepository>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Repositories.Clients.IClientRepository, CaseTrackerInfrastructure.Repositories.Clients.ClientRepository>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Repositories.Hearings.IHearingRepository, CaseTrackerInfrastructure.Repositories.Hearings.HearingRepository>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Repositories.Courts.ICourtRepository, CaseTrackerInfrastructure.Repositories.Courts.CourtRepository>();
+            services.AddScoped<CaseTrackerApplication.Interfaces.Repositories.ECourts.IECourtApiLogRepository, CaseTrackerInfrastructure.Repositories.ECourts.ECourtApiLogRepository>();
 
             // ==============================
             // UNIT OF WORK
@@ -61,6 +66,24 @@ namespace CaseTracker.Extensions
 
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<IJwtService, JwtService>();
+
+            // ==============================
+            // ECOURTS EXTERNAL CLIENT
+            // ==============================
+
+            services.AddHttpClient<CaseTrackerApplication.Interfaces.Services.ECourts.IECourtClient, CaseTrackerInfrastructure.Services.ECourts.ECourtClient>(client =>
+            {
+                var baseUrl = configuration["ECourts:BaseUrl"] ?? "https://webapi.ecourtsindia.com";
+                client.BaseAddress = new Uri(baseUrl.TrimEnd('/') + "/");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            });
+
+            // ==============================
+            // BACKGROUND JOBS
+            // ==============================
+
+            services.AddHostedService<CaseTrackerInfrastructure.BackgroundJobs.CourtMasterSyncWorker>();
+            services.AddHostedService<CaseTrackerInfrastructure.BackgroundJobs.CaseStatusSyncWorker>();
 
             // ==============================
             // AI SERVICES

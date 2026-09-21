@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="../CaseTrackerApplication/CaseTrackerApplication.csproj" />
+  <Project Path="../CaseTrackerDomain/CaseTrackerDomain.csproj" />
+  <Project Path="../CaseTrackerInfrastructure/CaseTrackerInfrastructure.csproj" />
+  <Project Path="CaseTracker.Functions.Tests/CaseTracker.Functions.Tests.csproj" />
+  <Project Path="CaseTracker.Functions/CaseTracker.Functions.csproj" />
+</Solution>
